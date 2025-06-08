@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RETRO-FUTURE GRAPHIC ANIMATOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        .status {
+            text-align: center;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 4px;
+            margin: 16px 0;
+            font-size: 0.875rem;
+            color: #888888;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            font-weight: 400;
+            letter-spacing: -0.01em;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #1a1a1a;
+            padding-bottom: 24px;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+        
+        .header .subtitle {
+            font-size: 0.75rem;
+            color: #888888;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+        }
+        
+        .control-panel {
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .control-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .control-group label {
+            font-weight: 500;
+            color: #ffffff;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .control-group input,
+        .control-group select {
+            padding: 8px 12px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            background: #000000;
+            color: #ffffff;
+            transition: border-color 0.15s ease;
+        }
+        
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: #00ffff;
+        }
+        
+        .text-input-full {
+            grid-column: 1 / -1;
+        }
+        
+        .text-input-full input {
+            width: 100%;
+            padding: 12px 16px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: #000000;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .btn:hover {
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+        
+        .btn-primary {
+            background: #00ffff;
+            color: #000000;
+            border-color: #00ffff;
+        }
+        
+        .btn-primary:hover {
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+        
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin: 32px 0;
+        }
+        
+        canvas {
+            border: 1px solid #333333;
+            border-radius: 4px;
+            background: #000000;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #1a1a1a;
+            color: #888888;
+            font-size: 0.75rem;
+        }
+        
+        .footer .absai-logo {
+            display: inline-block;
+            margin: 8px 0;
+        }
+        
+        .footer .absai-logo img {
+            height: 60px;
+            width: auto;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RETRO-FUTURE GRAPHIC ANIMATOR</h1>
+            <div class="subtitle">Built by ABSAI</div>
+        </div>
+        
+        <div class="control-panel">
+            <div class="control-row">
+                <div class="control-group">
+                    <label>Pattern</label>
+                    <select id="pattern">
+                        <option value="text" selected>Text Display</option>
+                        <option value="heart">Heart</option>
+                        <option value="dots">Random Dots</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Custom Text</label>
+                    <input type="text" id="customText" placeholder="Enter your text..." value="IONIQ 6 N">
+                </div>
+                
+                <div class="control-group">
+                    <label>Color Scheme</label>
+                    <select id="baseColor">
+                        <option value="red" selected>N Red</option>
+                        <option value="blue">Perf Blue</option>
+                        <option value="white">White/Gray</option>
+                        <option value="green">Matrix Green</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Duration</label>
+                    <select id="duration">
+                        <option value="3" selected>3s</option>
+                        <option value="5">5s</option>
+                        <option value="10">10s</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-row-2">
+                <div class="control-group">
+                    <label>Animation</label>
+                    <select id="animation">
+                        <option value="none">Static</option>
+                        <option value="pulse">Pulse</option>
+                        <option value="blink">Blink</option>
+                        <option value="glitch">Glitch</option>
+                        <option value="laser">Laser Scan</option>
+                        <option value="collision">Sphere Collision</option>
+                        <option value="matrix">Matrix Rain</option>
+                        <option value="equalizer">Graphic Equalizer</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Matrix Rain Color</label>
+                    <select id="matrixColor">
+                        <option value="green" selected>Classic Green</option>
+                        <option value="blue">Perf. Blue</option>
+                        <option value="red">N Red</option>
+                        <option value="white">Pure White</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <!-- Empty for spacing -->
+                </div>
+                
+                <div class="control-group">
+                    <!-- Empty for spacing -->
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generatePattern()">Generate</button>
+                <button class="btn" onclick="animateDisplay()" id="animateBtn">Animate</button>
+                <button class="btn" onclick="pauseAnimation()" id="pauseBtn" style="display: none;">Pause</button>
+                <button class="btn" onclick="saveAsImage()">Save PNG</button>
+            </div>
+        </div>
+        
+        <div class="status" id="status">Ready to create pixel art!</div>
+        
+        <div class="canvas-container">
+            <canvas id="canvas" width="800" height="400"></canvas>
+        </div>
+        
+        <div class="footer">
+            <div>Built using AI vibe coding by Simon Woollard - June 07 2025</div>
+            <div class="absai-logo">
+                <img src="data:image/png;base64,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" alt="ABSAI Logo" />
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let pixelGrid = [];
+        let isAnimating = false;
+        let animationFrame = null;
+        
+        // Constants
+        const PIXEL_SIZE = 4;
+        const PIXEL_GAP = 1;
+        
+        // Color themes
+        const colorThemes = {
+            red: {
+                levels: ['#000000', '#1a0000', '#330000', '#4d0000', '#660000', '#800000', '#990000', '#b30000', '#cc0000', '#dc3312', '#e64d33', '#f06666', '#ff8080']
+            },
+            blue: {
+                levels: ['#000000', '#0a0f14', '#141e28', '#1e2d3c', '#283c50', '#324b64', '#3c5a78', '#46698c', '#5078a0', '#6487b4', '#7896c8', '#8ca5dc', '#aacae6']
+            },
+            white: {
+                levels: ['#000000', '#111111', '#222222', '#333333', '#444444', '#555555', '#666666', '#777777', '#888888', '#999999', '#aaaaaa', '#cccccc', '#ffffff']
+            },
+            green: {
+                levels: ['#000000', '#0a1a0a', '#143314', '#1e4d1e', '#286628', '#328032', '#3c993c', '#46b346', '#50cc50', '#64dc64', '#78e678', '#8cf08c', '#a6ffa6']
+            }
+        };
+        
+        // 3x5 pixel font (smaller for matrix rain)
+        const smallPixelFont = {
+            'A': [[0,1,0],[1,0,1],[1,1,1],[1,0,1],[1,0,1]],
+            'B': [[1,1,0],[1,0,1],[1,1,0],[1,0,1],[1,1,0]],
+            'C': [[0,1,1],[1,0,0],[1,0,0],[1,0,0],[0,1,1]],
+            'D': [[1,1,0],[1,0,1],[1,0,1],[1,0,1],[1,1,0]],
+            'E': [[1,1,1],[1,0,0],[1,1,0],[1,0,0],[1,1,1]],
+            'F': [[1,1,1],[1,0,0],[1,1,0],[1,0,0],[1,0,0]],
+            'G': [[0,1,1],[1,0,0],[1,0,1],[1,0,1],[0,1,1]],
+            'H': [[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1]],
+            'I': [[1,1,1],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+            'J': [[0,0,1],[0,0,1],[0,0,1],[1,0,1],[0,1,0]],
+            'K': [[1,0,1],[1,1,0],[1,0,0],[1,1,0],[1,0,1]],
+            'L': [[1,0,0],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
+            'M': [[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1]],
+            'N': [[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1]],
+            'O': [[0,1,0],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
+            'P': [[1,1,0],[1,0,1],[1,1,0],[1,0,0],[1,0,0]],
+            'Q': [[0,1,0],[1,0,1],[1,1,1],[0,1,1],[0,0,1]],
+            'R': [[1,1,0],[1,0,1],[1,1,0],[1,0,1],[1,0,1]],
+            'S': [[0,1,1],[1,0,0],[0,1,0],[0,0,1],[1,1,0]],
+            'T': [[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],
+            'U': [[1,0,1],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
+            'V': [[1,0,1],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
+            'W': [[1,0,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1]],
+            'X': [[1,0,1],[0,1,0],[0,1,0],[0,1,0],[1,0,1]],
+            'Y': [[1,0,1],[1,0,1],[0,1,0],[0,1,0],[0,1,0]],
+            'Z': [[1,1,1],[0,0,1],[0,1,0],[1,0,0],[1,1,1]],
+            '0': [[0,1,0],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
+            '1': [[0,1,0],[1,1,0],[0,1,0],[0,1,0],[1,1,1]],
+            '2': [[0,1,0],[1,0,1],[0,1,0],[1,0,0],[1,1,1]],
+            '3': [[1,1,0],[0,0,1],[0,1,0],[0,0,1],[1,1,0]],
+            '4': [[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1]],
+            '5': [[1,1,1],[1,0,0],[1,1,0],[0,0,1],[1,1,0]],
+            '6': [[0,1,1],[1,0,0],[1,1,0],[1,0,1],[0,1,0]],
+            '7': [[1,1,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0]],
+            '8': [[0,1,0],[1,0,1],[0,1,0],[1,0,1],[0,1,0]],
+            '9': [[0,1,0],[1,0,1],[0,1,1],[0,0,1],[1,1,0]],
+            ' ': [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],
+            '?': [[0,1,0],[1,0,1],[0,1,0],[0,0,0],[0,1,0]],
+            '!': [[0,1,0],[0,1,0],[0,1,0],[0,0,0],[0,1,0]],
+            '.': [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,1,0]],
+            ':': [[0,0,0],[0,1,0],[0,0,0],[0,1,0],[0,0,0]],
+            '-': [[0,0,0],[0,0,0],[1,1,1],[0,0,0],[0,0,0]]
+        };
+        
+        // 5x7 pixel font (original size)
+        const pixelFont = {
+            'A': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+            'B': [[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0]],
+            'C': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,1],[0,1,1,1,0]],
+            'D': [[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0]],
+            'E': [[1,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],
+            'F': [[1,1,1,1,1],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]],
+            'G': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,0],[1,0,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            'H': [[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+            'I': [[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1]],
+            'J': [[0,0,1,1,1],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[1,0,0,1,0],[0,1,1,0,0]],
+            'K': [[1,0,0,0,1],[1,0,0,1,0],[1,0,1,0,0],[1,1,0,0,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1]],
+            'L': [[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],
+            'M': [[1,0,0,0,1],[1,1,0,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+            'N': [[1,0,0,0,1],[1,1,0,0,1],[1,0,1,0,1],[1,0,0,1,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+            'O': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            'P': [[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]],
+            'Q': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,0,1,0],[0,1,1,0,1]],
+            'R': [[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[1,1,1,1,0],[1,0,1,0,0],[1,0,0,1,0],[1,0,0,0,1]],
+            'S': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,0],[0,1,1,1,0],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            'T': [[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
+            'U': [[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            'V': [[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0]],
+            'W': [[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,1,0,1],[1,0,1,0,1],[1,1,0,1,1],[1,0,0,0,1]],
+            'X': [[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,1,0,1,0],[1,0,0,0,1],[1,0,0,0,1]],
+            'Y': [[1,0,0,0,1],[1,0,0,0,1],[0,1,0,1,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
+            'Z': [[1,1,1,1,1],[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,1,0,0,0],[1,0,0,0,0],[1,1,1,1,1]],
+            '0': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,1,1],[1,0,1,0,1],[1,1,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            '1': [[0,0,1,0,0],[0,1,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[1,1,1,1,1]],
+            '2': [[0,1,1,1,0],[1,0,0,0,1],[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,1,0,0,0],[1,1,1,1,1]],
+            '3': [[0,1,1,1,0],[1,0,0,0,1],[0,0,0,0,1],[0,0,1,1,0],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            '4': [[0,0,0,1,0],[0,0,1,1,0],[0,1,0,1,0],[1,0,0,1,0],[1,1,1,1,1],[0,0,0,1,0],[0,0,0,1,0]],
+            '5': [[1,1,1,1,1],[1,0,0,0,0],[1,1,1,1,0],[0,0,0,0,1],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            '6': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,0],[1,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            '7': [[1,1,1,1,1],[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,1,0,0,0],[0,1,0,0,0],[0,1,0,0,0]],
+            '8': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            '9': [[0,1,1,1,0],[1,0,0,0,1],[1,0,0,0,1],[0,1,1,1,1],[0,0,0,0,1],[1,0,0,0,1],[0,1,1,1,0]],
+            ' ': [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]],
+            '?': [[0,1,1,1,0],[1,0,0,0,1],[0,0,0,0,1],[0,0,0,1,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0]],
+            '!': [[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,0,0,0],[0,0,1,0,0]],
+            '.': [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,1,1,0,0],[0,1,1,0,0]],
+            ':': [[0,0,0,0,0],[0,1,1,0,0],[0,1,1,0,0],[0,0,0,0,0],[0,1,1,0,0],[0,1,1,0,0],[0,0,0,0,0]],
+            '-': [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[1,1,1,1,1],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+        };
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        function initDisplay() {
+            const gridWidth = Math.floor(canvas.width / (PIXEL_SIZE + PIXEL_GAP));
+            const gridHeight = Math.floor(canvas.height / (PIXEL_SIZE + PIXEL_GAP));
+            
+            pixelGrid = [];
+            for (let y = 0; y < gridHeight; y++) {
+                pixelGrid[y] = [];
+                for (let x = 0; x < gridWidth; x++) {
+                    pixelGrid[y][x] = 0;
+                }
+            }
+            
+            return { gridWidth, gridHeight };
+        }
+        
+        function drawPixelGrid() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const baseColor = document.getElementById('baseColor').value;
+            const palette = colorThemes[baseColor] || colorThemes.red;
+            
+            for (let y = 0; y < pixelGrid.length; y++) {
+                for (let x = 0; x < pixelGrid[y].length; x++) {
+                    const pixel = pixelGrid[y][x];
+                    
+                    if (pixel && pixel !== 0) {
+                        let color;
+                        
+                        // Check if this pixel has special color information
+                        if (pixel.isSpecialColor) {
+                            // Use the specific color stored in the pixel
+                            color = pixel.color;
+                        } else {
+                            // Use normal color scheme for regular pixels
+                            const intensity = Math.floor(pixel * (palette.levels.length - 1));
+                            color = palette.levels[Math.min(intensity, palette.levels.length - 1)];
+                        }
+                        
+                        ctx.fillStyle = color;
+                        const pixelX = x * (PIXEL_SIZE + PIXEL_GAP);
+                        const pixelY = y * (PIXEL_SIZE + PIXEL_GAP);
+                        ctx.fillRect(pixelX, pixelY, PIXEL_SIZE, PIXEL_SIZE);
+                    }
+                }
+            }
+        }
+        
+        function generateTextPattern(text) {
+            const { gridWidth, gridHeight } = initDisplay();
+            
+            // Handle long text - split at 15 characters
+            if (text.length > 15) {
+                const words = text.split(' ');
+                const lines = [];
+                let currentLine = '';
+                
+                for (let word of words) {
+                    const testLine = currentLine ? currentLine + ' ' + word : word;
+                    if (testLine.length > 15) {
+                        if (currentLine) {
+                            lines.push(currentLine);
+                            currentLine = word;
+                        } else {
+                            lines.push(word.substring(0, 15));
+                            currentLine = word.substring(15);
+                        }
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                if (currentLine) lines.push(currentLine);
+                
+                // Draw multi-line text
+                const charWidth = 5;
+                const charHeight = 7;
+                const charSpacing = 2;
+                const lineSpacing = 3;
+                
+                const totalHeight = lines.length * charHeight + (lines.length - 1) * lineSpacing;
+                const startY = Math.max(0, Math.floor((gridHeight - totalHeight) / 2));
+                
+                for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+                    const line = lines[lineIndex];
+                    const lineWidth = line.length * (charWidth + charSpacing) - charSpacing;
+                    const lineStartX = Math.max(0, Math.floor((gridWidth - lineWidth) / 2));
+                    const lineY = startY + lineIndex * (charHeight + lineSpacing);
+                    
+                    for (let i = 0; i < line.length; i++) {
+                        const char = line[i].toUpperCase();
+                        const charData = pixelFont[char];
+                        
+                        if (charData) {
+                            const charX = lineStartX + i * (charWidth + charSpacing);
+                            
+                            for (let y = 0; y < charHeight; y++) {
+                                for (let x = 0; x < charWidth; x++) {
+                                    const pixelX = charX + x;
+                                    const pixelY = lineY + y;
+                                    
+                                    if (pixelX < gridWidth && pixelY < gridHeight && pixelX >= 0 && pixelY >= 0) {
+                                        pixelGrid[pixelY][pixelX] = charData[y][x];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+            
+            // Single line text
+            const charWidth = 5;
+            const charHeight = 7;
+            const charSpacing = 2;
+            
+            const totalWidth = text.length * (charWidth + charSpacing) - charSpacing;
+            const startX = Math.max(0, Math.floor((gridWidth - totalWidth) / 2));
+            const startY = Math.max(0, Math.floor((gridHeight - charHeight) / 2));
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i].toUpperCase();
+                const charData = pixelFont[char];
+                
+                if (charData) {
+                    const charX = startX + i * (charWidth + charSpacing);
+                    
+                    for (let y = 0; y < charHeight; y++) {
+                        for (let x = 0; x < charWidth; x++) {
+                            const pixelX = charX + x;
+                            const pixelY = startY + y;
+                            
+                            if (pixelX < gridWidth && pixelY < gridHeight && pixelX >= 0 && pixelY >= 0) {
+                                pixelGrid[pixelY][pixelX] = charData[y][x];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function generateHeartPattern() {
+            const { gridWidth, gridHeight } = initDisplay();
+            const centerX = gridWidth / 2;
+            const centerY = gridHeight / 2;
+            
+            const heart = [
+                [0,1,1,0,0,0,1,1,0],
+                [1,1,1,1,0,1,1,1,1],
+                [1,1,1,1,1,1,1,1,1],
+                [1,1,1,1,1,1,1,1,1],
+                [0,1,1,1,1,1,1,1,0],
+                [0,0,1,1,1,1,1,0,0],
+                [0,0,0,1,1,1,0,0,0],
+                [0,0,0,0,1,0,0,0,0]
+            ];
+            
+            const startX = Math.floor(centerX - heart[0].length / 2);
+            const startY = Math.floor(centerY - heart.length / 2);
+            
+            for (let y = 0; y < heart.length; y++) {
+                for (let x = 0; x < heart[y].length; x++) {
+                    const pixelX = startX + x;
+                    const pixelY = startY + y;
+                    if (pixelX >= 0 && pixelX < gridWidth && pixelY >= 0 && pixelY < gridHeight) {
+                        pixelGrid[pixelY][pixelX] = heart[y][x];
+                    }
+                }
+            }
+        }
+        
+        function generateDotsPattern() {
+            const { gridWidth, gridHeight } = initDisplay();
+            
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    if (Math.random() > 0.8) {
+                        pixelGrid[y][x] = Math.random();
+                    } else {
+                        pixelGrid[y][x] = 0;
+                    }
+                }
+            }
+        }
+        
+        function generatePattern() {
+            const pattern = document.getElementById('pattern').value;
+            const text = document.getElementById('customText').value || 'IONIQ 6 N';
+            
+            switch(pattern) {
+                case 'text':
+                    generateTextPattern(text);
+                    break;
+                case 'heart':
+                    generateHeartPattern();
+                    break;
+                case 'dots':
+                    generateDotsPattern();
+                    break;
+                default:
+                    generateTextPattern(text);
+            }
+            
+            drawPixelGrid();
+            updateStatus(`Generated ${pattern} pattern!`);
+        }
+        
+        function animateDisplay() {
+            const animation = document.getElementById('animation').value;
+            const duration = parseInt(document.getElementById('duration').value) * 1000;
+            
+            if (animation === 'none') {
+                updateStatus('No animation selected');
+                return;
+            }
+            
+            if (isAnimating) {
+                cancelAnimationFrame(animationFrame);
+                isAnimating = false;
+                // Clean up matrix columns when stopping animation
+                if (window.matrixColumns) {
+                    delete window.matrixColumns;
+                }
+                // Clean up equalizer bars when stopping animation
+                if (window.equalizerBars) {
+                    delete window.equalizerBars;
+                }
+            }
+            
+            isAnimating = true;
+            
+            // Update button visibility
+            document.getElementById('animateBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            const startTime = Date.now();
+            const originalGrid = pixelGrid.map(row => [...row]);
+            
+            updateStatus(`Animating: ${animation} for ${duration/1000}s`);
+            
+            function animate() {
+                if (!isAnimating || Date.now() - startTime > duration) {
+                    isAnimating = false;
+                    // Clean up matrix columns when animation ends
+                    if (window.matrixColumns) {
+                        delete window.matrixColumns;
+                    }
+                    // Clean up equalizer bars when animation ends
+                    if (window.equalizerBars) {
+                        delete window.equalizerBars;
+                    }
+                    
+                    // Update button visibility
+                    document.getElementById('animateBtn').style.display = 'inline-block';
+                    document.getElementById('pauseBtn').style.display = 'none';
+                    
+                    pixelGrid = originalGrid;
+                    drawPixelGrid();
+                    updateStatus('Animation complete');
+                    return;
+                }
+                
+                const elapsed = Date.now() - startTime;
+                
+                switch(animation) {
+                    case 'pulse':
+                        const pulseValue = (Math.sin(elapsed / 200) + 1) / 2;
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                if (originalGrid[y][x] > 0) {
+                                    pixelGrid[y][x] = originalGrid[y][x] * (0.3 + pulseValue * 0.7);
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'collision':
+                        // Epic sphere collision animation
+                        const { gridWidth, gridHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
+                        const centerX = gridWidth / 2;
+                        const centerY = gridHeight / 2;
+                        const sphereRadius = Math.min(gridWidth, gridHeight) * 0.15; // Smaller spheres for collision
+                        
+                        // Animation phases with precise timing
+                        const totalDuration = duration;
+                        const approachTime = totalDuration * 0.4;    // 40% - spheres approach
+                        const eclipseTime = totalDuration * 0.1;     // 10% - eclipse moment
+                        const explosionTime = totalDuration * 0.2;   // 20% - explosion
+                        const fusionTime = totalDuration * 0.3;      // 30% - fusion and aftermath
+                        
+                        let phase = 'approach';
+                        let phaseProgress = 0;
+                        
+                        if (elapsed < approachTime) {
+                            phase = 'approach';
+                            phaseProgress = elapsed / approachTime;
+                        } else if (elapsed < approachTime + eclipseTime) {
+                            phase = 'eclipse';
+                            phaseProgress = (elapsed - approachTime) / eclipseTime;
+                        } else if (elapsed < approachTime + eclipseTime + explosionTime) {
+                            phase = 'explosion';
+                            phaseProgress = (elapsed - approachTime - eclipseTime) / explosionTime;
+                        } else {
+                            phase = 'fusion';
+                            phaseProgress = (elapsed - approachTime - eclipseTime - explosionTime) / fusionTime;
+                        }
+                        
+                        // Clear canvas - reset all pixels
+                        for (let y = 0; y < gridHeight; y++) {
+                            for (let x = 0; x < gridWidth; x++) {
+                                pixelGrid[y][x] = 0;
+                            }
+                        }
+                        
+                        if (phase === 'approach') {
+                            // Two spheres moving toward each other
+                            const startDistance = gridWidth * 0.4;
+                            const currentDistance = startDistance * (1 - phaseProgress);
+                            
+                            const leftSphereX = centerX - currentDistance;
+                            const rightSphereX = centerX + currentDistance;
+                            
+                            // Draw red sphere (left)
+                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight);
+                            
+                            // Draw blue sphere (right)
+                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight);
+                            
+                        } else if (phase === 'eclipse') {
+                            // Eclipse/singularity moment - spheres overlap
+                            const overlap = phaseProgress * sphereRadius * 0.8;
+                            const leftSphereX = centerX - overlap;
+                            const rightSphereX = centerX + overlap;
+                            
+                            // Draw overlapping spheres with increasing intensity
+                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight);
+                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight);
+                            
+                            // Add eclipse ring effect
+                            const ringRadius = sphereRadius * (1.2 + phaseProgress * 0.5);
+                            drawEclipseRing(centerX, centerY, ringRadius, phaseProgress, gridWidth, gridHeight);
+                            
+                        } else if (phase === 'explosion') {
+                            // Explosion and flash
+                            const explosionRadius = sphereRadius * (1 + phaseProgress * 3);
+                            const flashIntensity = Math.sin(phaseProgress * Math.PI * 4) * (1 - phaseProgress);
+                            
+                            // Draw explosion burst
+                            drawExplosion(centerX, centerY, explosionRadius, phaseProgress, flashIntensity, gridWidth, gridHeight);
+                            
+                            // Flash effect
+                            if (flashIntensity > 0.5) {
+                                for (let y = 0; y < gridHeight; y++) {
+                                    for (let x = 0; x < gridWidth; x++) {
+                                        if (Math.random() < 0.3) {
+                                            pixelGrid[y][x] = Math.max(pixelGrid[y][x], flashIntensity);
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        } else if (phase === 'fusion') {
+                            // Final fused sphere with energy waves
+                            const fusedRadius = sphereRadius * (1.5 - phaseProgress * 0.3);
+                            const waveIntensity = (1 - phaseProgress) * 0.5;
+                            
+                            // Draw fused purple/white sphere
+                            drawGradientSphere(centerX, centerY, fusedRadius, 'fusion', gridWidth, gridHeight);
+                            
+                            // Add energy waves
+                            const waveRadius = fusedRadius + (phaseProgress * sphereRadius * 2);
+                            drawEnergyWaves(centerX, centerY, waveRadius, waveIntensity, gridWidth, gridHeight);
+                        }
+                        break;
+                        
+                    case 'blink':
+                        const shouldShow = Math.floor(elapsed / 500) % 2 === 0;
+                        if (shouldShow) {
+                            for (let y = 0; y < pixelGrid.length; y++) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    pixelGrid[y][x] = originalGrid[y][x];
+                                }
+                            }
+                        } else {
+                            for (let y = 0; y < pixelGrid.length; y++) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    pixelGrid[y][x] = 0;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'laser':
+                        // Smooth sweeping laser scan across visible text
+                        const totalHeight = pixelGrid.length;
+                        const scanCycleTime = 2000; // 2 seconds per complete sweep
+                        const currentTime = elapsed % scanCycleTime;
+                        const sweepProgress = currentTime / scanCycleTime;
+                        
+                        // Calculate smooth sweep positions
+                        const upwardSweep = sweepProgress * totalHeight; // 0 to height (bottom to top)
+                        const downwardSweep = totalHeight - (sweepProgress * totalHeight); // height to 0 (top to bottom)
+                        const offsetSweep = ((sweepProgress + 0.33) % 1) * totalHeight; // Offset by 1/3
+                        
+                        // Start with original text visible but dimmed
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                pixelGrid[y][x] = originalGrid[y][x] * 0.4; // Keep text visible but dim
+                            }
+                        }
+                        
+                        // Add sweeping scan lines that brighten the text
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            let scanIntensity = 0;
+                            
+                            // Upward moving bright line
+                            const distanceFromUpSweep = Math.abs(y - upwardSweep);
+                            if (distanceFromUpSweep < 3) {
+                                if (distanceFromUpSweep < 0.5) {
+                                    scanIntensity = Math.max(scanIntensity, 1.0); // Brightest center
+                                } else if (distanceFromUpSweep < 1.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.8); // Medium glow
+                                } else {
+                                    scanIntensity = Math.max(scanIntensity, 0.6); // Outer glow
+                                }
+                            }
+                            
+                            // Downward moving bright line
+                            const distanceFromDownSweep = Math.abs(y - downwardSweep);
+                            if (distanceFromDownSweep < 2.5) {
+                                if (distanceFromDownSweep < 0.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.9);
+                                } else if (distanceFromDownSweep < 1.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.7);
+                                }
+                            }
+                            
+                            // Offset sweep line
+                            const distanceFromOffsetSweep = Math.abs(y - offsetSweep);
+                            if (distanceFromOffsetSweep < 2) {
+                                if (distanceFromOffsetSweep < 0.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.8);
+                                }
+                            }
+                            
+                            // Apply scan intensity to the entire row
+                            if (scanIntensity > 0) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    // Brighten text where it exists, add scan line everywhere
+                                    if (originalGrid[y][x] > 0) {
+                                        // Brighten existing text
+                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], originalGrid[y][x] * scanIntensity);
+                                    } else {
+                                        // Add faint scan line in empty areas
+                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], scanIntensity * 0.3);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Add bright white scan lines
+                        const whiteLineTime = (elapsed * 1.3) % scanCycleTime;
+                        const whiteProgress = whiteLineTime / scanCycleTime;
+                        const whiteSweepUp = whiteProgress * totalHeight;
+                        const whiteSweepDown = totalHeight - (whiteProgress * totalHeight);
+                        
+                        // Draw thin bright white lines
+                        const whiteY1 = Math.floor(whiteSweepUp);
+                        const whiteY2 = Math.floor(whiteSweepDown);
+                        
+                        if (whiteY1 >= 0 && whiteY1 < pixelGrid.length) {
+                            for (let x = 0; x < pixelGrid[whiteY1].length; x++) {
+                                pixelGrid[whiteY1][x] = Math.max(pixelGrid[whiteY1][x], 0.95);
+                            }
+                        }
+                        
+                        if (whiteY2 >= 0 && whiteY2 < pixelGrid.length) {
+                            for (let x = 0; x < pixelGrid[whiteY2].length; x++) {
+                                pixelGrid[whiteY2][x] = Math.max(pixelGrid[whiteY2][x], 0.9);
+                            }
+                        }
+                        break;
+                        
+                    case 'matrix':
+                        // Matrix rain animation using custom text
+                        const { gridWidth: matrixWidth, gridHeight: matrixHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
+                        const customTextForMatrix = document.getElementById('customText').value || 'IONIQ 6 N';
+                        const matrixColorScheme = document.getElementById('matrixColor').value;
+                        
+                        // Clear the screen
+                        for (let y = 0; y < matrixHeight; y++) {
+                            for (let x = 0; x < matrixWidth; x++) {
+                                pixelGrid[y][x] = 0;
+                            }
+                        }
+                        
+                        // Matrix rain parameters - reinitialize each time to get fresh text
+                        if (!window.matrixColumns || elapsed < 100) {
+                            if (window.matrixColumns) delete window.matrixColumns;
+                            window.matrixColumns = [];
+                            
+                            // Split text into words for readable falling
+                            const words = customTextForMatrix.trim().split(/\s+/);
+                            
+                            // Create multiple falling columns with individual characters
+                            const columnCount = 25; // Number of falling streams
+                            const columnWidth = Math.floor(matrixWidth / columnCount);
+                            
+                            for (let i = 0; i < columnCount; i++) {
+                                window.matrixColumns.push({
+                                    x: i * columnWidth + Math.random() * (columnWidth - 4),
+                                    y: Math.random() * -matrixHeight,
+                                    speed: 0.5 + Math.random() * 1.0,
+                                    trail: [],
+                                    brightness: 0.8 + Math.random() * 0.2,
+                                    words: words,
+                                    currentWordIndex: Math.floor(Math.random() * words.length),
+                                    currentCharIndex: 0
+                                });
+                            }
+                        }
+                        
+                        // Update matrix columns
+                        for (let col of window.matrixColumns) {
+                            // Move column down
+                            col.y += col.speed;
+                            
+                            // Reset column when it goes off screen
+                            if (col.y > matrixHeight + 20) {
+                                col.y = Math.random() * -30 - 20;
+                                col.speed = 0.5 + Math.random() * 1.0;
+                                col.trail = [];
+                                col.brightness = 0.8 + Math.random() * 0.2;
+                                col.currentWordIndex = Math.floor(Math.random() * col.words.length);
+                                col.currentCharIndex = 0;
+                            }
+                            
+                            // Get current character from current word
+                            const currentWord = col.words[col.currentWordIndex];
+                            const currentChar = currentWord[col.currentCharIndex];
+                            
+                            // Move to next character occasionally
+                            if (Math.random() < 0.1) {
+                                col.currentCharIndex++;
+                                if (col.currentCharIndex >= currentWord.length) {
+                                    col.currentCharIndex = 0;
+                                    col.currentWordIndex = (col.currentWordIndex + 1) % col.words.length;
+                                }
+                            }
+                            
+                            // Update trail
+                            col.trail.unshift({ y: col.y, char: currentChar });
+                            if (col.trail.length > 15) {
+                                col.trail.pop();
+                            }
+                            
+                            // Draw the trail
+                            for (let i = 0; i < col.trail.length; i++) {
+                                const trailChar = col.trail[i];
+                                const charY = Math.floor(trailChar.y - i * 6);
+                                
+                                if (charY >= 0 && charY < matrixHeight - 5) {
+                                    const char = trailChar.char ? trailChar.char.toUpperCase() : ' ';
+                                    const charData = smallPixelFont[char];
+                                    
+                                    if (charData) {
+                                        // Calculate brightness
+                                        let brightness;
+                                        if (i === 0) {
+                                            brightness = col.brightness;
+                                        } else {
+                                            brightness = Math.max(0.1, (1 - i / col.trail.length) * 0.8);
+                                        }
+                                        
+                                        // Draw character (3x5)
+                                        for (let y = 0; y < 5; y++) {
+                                            for (let x = 0; x < 3; x++) {
+                                                const pixelX = Math.floor(col.x) + x;
+                                                const pixelY = charY + y;
+                                                
+                                                if (pixelX < matrixWidth && pixelY < matrixHeight && pixelX >= 0 && pixelY >= 0) {
+                                                    if (charData[y] && charData[y][x]) {
+                                                        let pixelValue;
+                                                        
+                                                        if (i === 0) {
+                                                            // Leading character in white
+                                                            const whiteLevels = colorThemes.white.levels;
+                                                            const levelIndex = Math.floor(brightness * (whiteLevels.length - 1));
+                                                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                                                            
+                                                            pixelValue = {
+                                                                isSpecialColor: true,
+                                                                color: color,
+                                                                intensity: brightness
+                                                            };
+                                                        } else {
+                                                            // Trail characters in selected color scheme
+                                                            const selectedLevels = colorThemes[matrixColorScheme].levels;
+                                                            const levelIndex = Math.floor(brightness * (selectedLevels.length - 1));
+                                                            const color = selectedLevels[Math.min(levelIndex, selectedLevels.length - 1)];
+                                                            
+                                                            pixelValue = {
+                                                                isSpecialColor: true,
+                                                                color: color,
+                                                                intensity: brightness
+                                                            };
+                                                        }
+                                                        
+                                                        // Only set if brighter than existing pixel
+                                                        if (!pixelGrid[pixelY][pixelX] || (pixelGrid[pixelY][pixelX].intensity || 0) < brightness) {
+                                                            pixelGrid[pixelY][pixelX] = pixelValue;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'equalizer':
+                        // Graphic Equalizer Animation
+                        const { gridWidth: eqWidth, gridHeight: eqHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
+                        
+                        // Clear the screen
+                        for (let y = 0; y < eqHeight; y++) {
+                            for (let x = 0; x < eqWidth; x++) {
+                                pixelGrid[y][x] = 0;
+                            }
+                        }
+                        
+                        // Initialize equalizer bars if needed
+                        if (!window.equalizerBars) {
+                            window.equalizerBars = [];
+                            const pairCount = 20; // Number of red/blue pairs
+                            const barWidth = 2; // Width of each individual bar
+                            const pairSpacing = 4; // Space between pairs
+                            const totalWidth = pairCount * (barWidth * 2 + pairSpacing) - pairSpacing;
+                            const startX = Math.floor((eqWidth - totalWidth) / 2);
+                            
+                            for (let i = 0; i < pairCount; i++) {
+                                const pairX = startX + i * (barWidth * 2 + pairSpacing);
+                                const frequency = i / (pairCount - 1); // 0 to 1
+                                
+                                // Red bar (left in each pair)
+                                window.equalizerBars.push({
+                                    x: pairX,
+                                    width: barWidth,
+                                    currentHeight: 0,
+                                    targetHeight: 0,
+                                    peakHeight: 0,
+                                    peakDecay: 0,
+                                    frequency: frequency,
+                                    colorType: 'red',
+                                    // Red bars respond more to rhythm and bass
+                                    bassResponse: Math.max(0.3, 1.2 - (frequency * 1.5)),
+                                    midResponse: frequency > 0.2 && frequency < 0.7 ? 0.8 : 0.3,
+                                    trebleResponse: frequency > 0.6 ? 0.9 : 0.2,
+                                    // Red bars are more aggressive - quick rise and fall
+                                    riseSpeed: 0.95,
+                                    fallSpeed: 0.75,
+                                    sensitivity: 1.4
+                                });
+                                
+                                // Blue bar (right in each pair)
+                                window.equalizerBars.push({
+                                    x: pairX + barWidth,
+                                    width: barWidth,
+                                    currentHeight: 0,
+                                    targetHeight: 0,
+                                    peakHeight: 0,
+                                    peakDecay: 0,
+                                    frequency: frequency,
+                                    colorType: 'blue',
+                                    // Blue bars respond more to melody and harmonics
+                                    bassResponse: frequency < 0.4 ? 0.6 : 0.2,
+                                    midResponse: frequency > 0.3 && frequency < 0.8 ? 1.1 : 0.4,
+                                    trebleResponse: frequency > 0.5 ? 1.3 : 0.3,
+                                    // Blue bars are smoother - slower rise and fall
+                                    riseSpeed: 0.6,
+                                    fallSpeed: 0.9,
+                                    sensitivity: 1.0
+                                });
+                            }
+                        }
+                        
+                        // Simulate pop music with more complex characteristics
+                        const time = elapsed / 1000;
+                        const beatFreq = 2.3; // Slightly faster tempo
+                        
+                        // Multiple musical elements with different timings
+                        const kickDrum = Math.max(0, Math.sin(time * beatFreq * Math.PI * 2)) * 0.9;
+                        const snare = Math.max(0, Math.sin((time - 0.22) * beatFreq * Math.PI * 2)) * 0.7; // Offset snare
+                        const hiHat = Math.sin(time * beatFreq * 8 * Math.PI * 2) * 0.4 + 0.4;
+                        const bassLine = Math.sin(time * beatFreq * 0.5 * Math.PI * 2) * 0.6 + 0.5; // Slower bass
+                        const vocals = Math.sin(time * 0.8 * Math.PI * 2) * 0.5 + 0.5;
+                        const synth = Math.sin(time * 1.3 * Math.PI * 2) * 0.4 + 0.3;
+                        const cymbal = Math.max(0, Math.sin(time * 0.25 * Math.PI * 2)) * 0.8; // Occasional crash
+                        
+                        // Add musical variations
+                        const breakdown = Math.sin(time * 0.1 * Math.PI * 2) > 0.8 ? 0.3 : 1.0; // Occasional quiet parts
+                        const buildup = Math.max(0, Math.sin(time * 0.05 * Math.PI * 2)) * 0.5 + 0.5; // Slow build
+                        
+                        // Update each bar with different responses
+                        for (let bar of window.equalizerBars) {
+                            let intensity = 0;
+                            const randomFactor = (Math.random() - 0.5) * 0.4;
+                            
+                            // Bass frequencies (0-0.3)
+                            if (bar.frequency <= 0.3) {
+                                if (bar.colorType === 'red') {
+                                    // Red bars: Aggressive response to drums
+                                    intensity = (kickDrum * 1.2 + bassLine * 0.8) * bar.bassResponse;
+                                    intensity += snare * 0.6; // Strong snare response
+                                } else {
+                                    // Blue bars: Smoother bass response
+                                    intensity = bassLine * bar.bassResponse * 0.9;
+                                    intensity += kickDrum * 0.4; // Gentler kick response
+                                }
+                            }
+                            // Mid-low frequencies (0.3-0.6)
+                            else if (bar.frequency <= 0.6) {
+                                if (bar.colorType === 'red') {
+                                    // Red bars: Punchy mids, strong snare
+                                    intensity = (snare * 1.4 + vocals * 0.6 + synth * 0.8) * bar.midResponse;
+                                    intensity += cymbal * 0.9;
+                                } else {
+                                    // Blue bars: Melodic content
+                                    intensity = (vocals * 1.1 + synth * 1.2 + bassLine * 0.4) * bar.midResponse;
+                                }
+                            }
+                            // High frequencies (0.6-1.0)
+                            else {
+                                if (bar.colorType === 'red') {
+                                    // Red bars: Sharp, aggressive highs
+                                    intensity = (hiHat * 1.3 + cymbal * 1.5 + snare * 0.4) * bar.trebleResponse;
+                                    // Add some sparkle
+                                    intensity += Math.sin(time * 5.7 * Math.PI * 2) * 0.3;
+                                } else {
+                                    // Blue bars: Smooth, harmonic highs
+                                    intensity = (vocals * 0.8 + synth * 0.9 + hiHat * 0.7) * bar.trebleResponse;
+                                    // Add harmonic overtones
+                                    intensity += Math.sin(time * 2.1 * Math.PI * 2) * 0.2;
+                                }
+                            }
+                            
+                            // Apply musical effects
+                            intensity *= breakdown * buildup;
+                            intensity += randomFactor;
+                            intensity *= bar.sensitivity;
+                            
+                            // More dramatic height variations
+                            intensity = Math.max(0, Math.min(1.8, intensity)); // Allow heights above 1.0
+                            bar.targetHeight = intensity * (eqHeight - 2);
+                            
+                            // Different rise/fall speeds for red vs blue
+                            if (bar.targetHeight > bar.currentHeight) {
+                                // Rising - use rise speed
+                                bar.currentHeight = bar.currentHeight * (1 - bar.riseSpeed) + bar.targetHeight * bar.riseSpeed;
+                            } else {
+                                // Falling - use fall speed  
+                                bar.currentHeight = bar.currentHeight * bar.fallSpeed + bar.targetHeight * (1 - bar.fallSpeed);
+                            }
+                            
+                            // Enhanced peak hold with different decay rates
+                            if (bar.currentHeight > bar.peakHeight) {
+                                bar.peakHeight = bar.currentHeight;
+                                bar.peakDecay = 0;
+                            } else {
+                                // Different decay rates for red vs blue
+                                const decayRate = bar.colorType === 'red' ? 0.025 : 0.015;
+                                bar.peakDecay += decayRate;
+                                bar.peakHeight = Math.max(bar.currentHeight, bar.peakHeight - bar.peakDecay);
+                            }
+                        }
+                        
+                        // Draw the equalizer bars
+                        for (let bar of window.equalizerBars) {
+                            const barHeight = Math.floor(bar.currentHeight);
+                            const peakY = Math.floor(eqHeight - bar.peakHeight - 1);
+                            
+                            // Choose color palette
+                            const colorPalette = bar.colorType === 'blue' ? colorThemes.blue : colorThemes.red;
+                            
+                            // Draw main bar from bottom up
+                            for (let y = 0; y < barHeight; y++) {
+                                for (let x = 0; x < bar.width; x++) {
+                                    const pixelX = bar.x + x;
+                                    const pixelY = eqHeight - 1 - y; // Draw from bottom
+                                    
+                                    if (pixelX < eqWidth && pixelY >= 0 && pixelY < eqHeight) {
+                                        // Calculate intensity based on height position
+                                        const heightRatio = y / Math.max(1, barHeight);
+                                        let intensity;
+                                        
+                                        // Gradient effect - brighter at top
+                                        if (heightRatio > 0.8) {
+                                            intensity = 0.9 + heightRatio * 0.1; // Very bright at top
+                                        } else if (heightRatio > 0.6) {
+                                            intensity = 0.7 + heightRatio * 0.2; // Bright
+                                        } else if (heightRatio > 0.3) {
+                                            intensity = 0.5 + heightRatio * 0.2; // Medium
+                                        } else {
+                                            intensity = 0.3 + heightRatio * 0.2; // Dim at bottom
+                                        }
+                                        
+                                        const levelIndex = Math.floor(intensity * (colorPalette.levels.length - 1));
+                                        const color = colorPalette.levels[Math.min(levelIndex, colorPalette.levels.length - 1)];
+                                        
+                                        const pixelValue = {
+                                            isSpecialColor: true,
+                                            color: color,
+                                            intensity: intensity
+                                        };
+                                        
+                                        pixelGrid[pixelY][pixelX] = pixelValue;
+                                    }
+                                }
+                            }
+                            
+                            // Draw peak indicator (bright white dot)
+                            if (bar.peakHeight > 2) {
+                                for (let x = 0; x < bar.width; x++) {
+                                    const pixelX = bar.x + x;
+                                    
+                                    if (pixelX < eqWidth && peakY >= 0 && peakY < eqHeight) {
+                                        const whiteLevels = colorThemes.white.levels;
+                                        const peakColor = whiteLevels[whiteLevels.length - 1]; // Brightest white
+                                        
+                                        const peakPixel = {
+                                            isSpecialColor: true,
+                                            color: peakColor,
+                                            intensity: 1.0
+                                        };
+                                        
+                                        pixelGrid[peakY][pixelX] = peakPixel;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'glitch':
+                        // Reset to original
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                pixelGrid[y][x] = originalGrid[y][x];
+                            }
+                        }
+                        
+                        // Add glitch effects
+                        if (Math.floor(elapsed / 150) % 3 !== 0) {
+                            for (let y = 0; y < pixelGrid.length; y++) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    if (originalGrid[y][x] > 0 && Math.random() < 0.15) {
+                                        if (Math.random() < 0.5) {
+                                            pixelGrid[y][x] = 0;
+                                        } else {
+                                            pixelGrid[y][x] = Math.random();
+                                        }
+                                    }
+                                    if (originalGrid[y][x] === 0 && Math.random() < 0.05) {
+                                        pixelGrid[y][x] = Math.random() * 0.7;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+                
+                drawPixelGrid();
+                animationFrame = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function pauseAnimation() {
+            if (isAnimating) {
+                isAnimating = false;
+                cancelAnimationFrame(animationFrame);
+                
+                // Update button visibility
+                document.getElementById('animateBtn').style.display = 'inline-block';
+                document.getElementById('pauseBtn').style.display = 'none';
+                
+                updateStatus('Animation paused - current frame preserved');
+            }
+        }
+        
+        function saveAsImage() {
+            const link = document.createElement('a');
+            link.download = `pixel-art-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            updateStatus('Image saved!');
+        }
+        
+        function drawGradientSphere(centerX, centerY, radius, colorType, gridWidth, gridHeight) {
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < radius) {
+                        const z = Math.sqrt(Math.max(0, radius * radius - dx * dx - dy * dy));
+                        const normal = {
+                            x: dx / radius,
+                            y: dy / radius,
+                            z: z / radius
+                        };
+                        
+                        const light = { x: 0.5, y: -0.5, z: 0.7 };
+                        const dot = normal.x * light.x + normal.y * light.y + normal.z * light.z;
+                        let intensity = Math.max(0, dot) * 0.8 + 0.2;
+                        
+                        // Create pixel with specific color information
+                        let pixelValue;
+                        
+                        if (colorType === 'red') {
+                            // Red sphere - use red color palette
+                            const redLevels = colorThemes.red.levels;
+                            const levelIndex = Math.floor(intensity * (redLevels.length - 1));
+                            const color = redLevels[Math.min(levelIndex, redLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity
+                            };
+                        } else if (colorType === 'blue') {
+                            // Blue sphere - use blue color palette
+                            const blueLevels = colorThemes.blue.levels;
+                            const levelIndex = Math.floor(intensity * (blueLevels.length - 1));
+                            const color = blueLevels[Math.min(levelIndex, blueLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity
+                            };
+                        } else if (colorType === 'fusion') {
+                            // Fusion sphere - bright white/purple
+                            const whiteLevels = colorThemes.white.levels;
+                            const levelIndex = Math.floor((intensity * 1.2) * (whiteLevels.length - 1));
+                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity * 1.2
+                            };
+                        }
+                        
+                        // Only set if this pixel is brighter than what's already there
+                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < intensity) {
+                            pixelGrid[y][x] = pixelValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawEclipseRing(centerX, centerY, radius, progress, gridWidth, gridHeight) {
+            const ringThickness = 3;
+            const intensity = 0.8 + Math.sin(progress * Math.PI * 6) * 0.2;
+            
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (Math.abs(dist - radius) < ringThickness) {
+                        const ringIntensity = intensity * (1 - Math.abs(dist - radius) / ringThickness);
+                        
+                        // Create eclipse ring with white color
+                        const whiteLevels = colorThemes.white.levels;
+                        const levelIndex = Math.floor(ringIntensity * (whiteLevels.length - 1));
+                        const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                        
+                        const pixelValue = {
+                            isSpecialColor: true,
+                            color: color,
+                            intensity: ringIntensity
+                        };
+                        
+                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < ringIntensity) {
+                            pixelGrid[y][x] = pixelValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawExplosion(centerX, centerY, radius, progress, flashIntensity, gridWidth, gridHeight) {
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < radius) {
+                        // Explosion burst pattern
+                        const angle = Math.atan2(dy, dx);
+                        const burstPattern = Math.sin(angle * 8) * 0.3 + 0.7;
+                        const distanceFactor = 1 - (dist / radius);
+                        const intensity = distanceFactor * burstPattern * (0.8 + flashIntensity * 0.4);
+                        
+                        // Create explosion pixel with white/bright color
+                        const whiteLevels = colorThemes.white.levels;
+                        const levelIndex = Math.floor(intensity * (whiteLevels.length - 1));
+                        const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                        
+                        const pixelValue = {
+                            isSpecialColor: true,
+                            color: color,
+                            intensity: intensity
+                        };
+                        
+                        // Add random sparks
+                        if (Math.random() < 0.1) {
+                            pixelValue.intensity = Math.min(1, intensity + Math.random() * 0.3);
+                            const sparkIndex = Math.floor(pixelValue.intensity * (whiteLevels.length - 1));
+                            pixelValue.color = whiteLevels[Math.min(sparkIndex, whiteLevels.length - 1)];
+                        }
+                        
+                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < pixelValue.intensity) {
+                            pixelGrid[y][x] = pixelValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawEnergyWaves(centerX, centerY, radius, intensity, gridWidth, gridHeight) {
+            const waveCount = 3;
+            
+            for (let wave = 0; wave < waveCount; wave++) {
+                const waveRadius = radius - (wave * 8);
+                const waveThickness = 2;
+                const waveIntensity = intensity * (1 - wave * 0.3);
+                
+                if (waveRadius > 0) {
+                    for (let y = 0; y < gridHeight; y++) {
+                        for (let x = 0; x < gridWidth; x++) {
+                            const dx = x - centerX;
+                            const dy = y - centerY;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (Math.abs(dist - waveRadius) < waveThickness) {
+                                const currentWaveIntensity = waveIntensity * (1 - Math.abs(dist - waveRadius) / waveThickness);
+                                
+                                // Create wave pixel with white color
+                                const whiteLevels = colorThemes.white.levels;
+                                const levelIndex = Math.floor(currentWaveIntensity * (whiteLevels.length - 1));
+                                const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                                
+                                const pixelValue = {
+                                    isSpecialColor: true,
+                                    color: color,
+                                    intensity: currentWaveIntensity
+                                };
+                                
+                                if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < currentWaveIntensity) {
+                                    pixelGrid[y][x] = pixelValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Initialize
+        initDisplay();
+        generatePattern();
+        updateStatus('Ready to create retro-future graphics!');
+    </script>
+</body>
+</html>
