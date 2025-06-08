@@ -9,15 +9,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        .status {
-            text-align: center;
-            padding: 12px 16px;
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            border-radius: 4px;
-            margin: 16px 0;
-            font-size: 0.875rem;
-            color: #888888;
         }
         
         body {
@@ -110,15 +101,6 @@
             border-color: #00ffff;
         }
         
-        .text-input-full {
-            grid-column: 1 / -1;
-        }
-        
-        .text-input-full input {
-            width: 100%;
-            padding: 12px 16px;
-        }
-        
         .action-buttons {
             display: flex;
             gap: 8px;
@@ -154,6 +136,17 @@
         .btn-primary:hover {
             background: #ffffff;
             border-color: #ffffff;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
+            border-radius: 4px;
+            margin: 16px 0;
+            font-size: 0.875rem;
+            color: #888888;
         }
         
         .canvas-container {
@@ -247,6 +240,9 @@
                         <option value="collision">Sphere Collision</option>
                         <option value="matrix">Matrix Rain</option>
                         <option value="equalizer">Graphic Equalizer</option>
+                        <option value="heartbeat">Heartbeat</option>
+                        <option value="countdown">Countdown Clock</option>
+                        <option value="dots_flicker">Dots Flicker</option>
                     </select>
                 </div>
                 
@@ -261,7 +257,8 @@
                 </div>
                 
                 <div class="control-group">
-                    <!-- Empty for spacing -->
+                    <label>Countdown (HH:MM:SS)</label>
+                    <input type="text" id="countdownTime" placeholder="00:03:00" value="00:03:00">
                 </div>
                 
                 <div class="control-group">
@@ -286,7 +283,8 @@
         <div class="footer">
             <div>Built using AI vibe coding by Simon Woollard - June 07 2025</div>
             <div class="absai-logo">
-                <img src="absai-logo.png" alt="ABSAI Logo" /> 
+                <img src="absai-logo.png" alt="ABSAI Logo" style="border: 1px solid #333; background: #111; padding: 10px;" />
+                <div style="font-size: 0.7rem; color: #666; margin-top: 4px;">Drop your ABSAI logo here</div>
             </div>
         </div>
     </div>
@@ -298,6 +296,8 @@
         let pixelGrid = [];
         let isAnimating = false;
         let animationFrame = null;
+        let countdownStartTime = null;
+        let countdownDuration = 0;
         
         // Constants
         const PIXEL_SIZE = 4;
@@ -306,7 +306,7 @@
         // Color themes
         const colorThemes = {
             red: {
-                levels: ['#000000', '#1a0000', '#330000', '#4d0000', '#660000', '#800000', '#990000', '#b30000', '#cc0000', '#dc3312', '#e64d33', '#f06666', '#ff8080']
+                levels: ['#000000', '#140000', '#280000', '#3c0000', '#500000', '#640000', '#780000', '#8c0000', '#a00000', '#b41414', '#c82828', '#dc3c3c', '#f05050']
             },
             blue: {
                 levels: ['#000000', '#0a0f14', '#141e28', '#1e2d3c', '#283c50', '#324b64', '#3c5a78', '#46698c', '#5078a0', '#6487b4', '#7896c8', '#8ca5dc', '#aacae6']
@@ -444,12 +444,9 @@
                     if (pixel && pixel !== 0) {
                         let color;
                         
-                        // Check if this pixel has special color information
                         if (pixel.isSpecialColor) {
-                            // Use the specific color stored in the pixel
                             color = pixel.color;
                         } else {
-                            // Use normal color scheme for regular pixels
                             const intensity = Math.floor(pixel * (palette.levels.length - 1));
                             color = palette.levels[Math.min(intensity, palette.levels.length - 1)];
                         }
@@ -460,6 +457,44 @@
                         ctx.fillRect(pixelX, pixelY, PIXEL_SIZE, PIXEL_SIZE);
                     }
                 }
+            }
+        }
+        
+        function parseTimeInput(timeString) {
+            // Parse HH:MM:SS, MM:SS, or SS formats
+            const parts = timeString.split(':');
+            let totalSeconds = 0;
+            
+            if (parts.length === 3) {
+                // HH:MM:SS
+                const hours = parseInt(parts[0]) || 0;
+                const minutes = parseInt(parts[1]) || 0;
+                const seconds = parseInt(parts[2]) || 0;
+                totalSeconds = hours * 3600 + minutes * 60 + seconds;
+            } else if (parts.length === 2) {
+                // MM:SS
+                const minutes = parseInt(parts[0]) || 0;
+                const seconds = parseInt(parts[1]) || 0;
+                totalSeconds = minutes * 60 + seconds;
+            } else if (parts.length === 1) {
+                // SS
+                totalSeconds = parseInt(parts[0]) || 0;
+            } else {
+                totalSeconds = 180; // Default 3 minutes
+            }
+            
+            return totalSeconds;
+        }
+        
+        function formatTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (hours > 0) {
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
         }
         
@@ -589,12 +624,159 @@
         function generateDotsPattern() {
             const { gridWidth, gridHeight } = initDisplay();
             
+            // Clear the grid first
             for (let y = 0; y < gridHeight; y++) {
                 for (let x = 0; x < gridWidth; x++) {
-                    if (Math.random() > 0.8) {
-                        pixelGrid[y][x] = Math.random();
-                    } else {
-                        pixelGrid[y][x] = 0;
+                    pixelGrid[y][x] = 0;
+                }
+            }
+            
+            // Adjust for larger dots - each "dot" will be 4x4 pixels (400% larger)
+            // So we need to work with a smaller logical grid
+            const dotSize = 4;
+            const logicalWidth = Math.floor(gridWidth / dotSize);
+            const logicalHeight = Math.floor(gridHeight / dotSize);
+            
+            // Create a logical grid for dot placement
+            let logicalGrid = [];
+            for (let y = 0; y < logicalHeight; y++) {
+                logicalGrid[y] = [];
+                for (let x = 0; x < logicalWidth; x++) {
+                    logicalGrid[y][x] = 0;
+                }
+            }
+            
+            // Increased density by 30% - was 35%, now 45.5%
+            const blockSizeX = 2; // Smaller blocks since we're working in logical space
+            const blockSizeY = 2;
+            
+            for (let blockY = 0; blockY < Math.floor(logicalHeight / blockSizeY); blockY++) {
+                for (let blockX = 0; blockX < Math.floor(logicalWidth / blockSizeX); blockX++) {
+                    
+                    // 45.5% chance this block will have dots
+                    if (Math.random() < 0.455) {
+                        const startX = blockX * blockSizeX;
+                        const startY = blockY * blockSizeY;
+                        
+                        const clusterType = Math.floor(Math.random() * 6);
+                        
+                        switch(clusterType) {
+                            case 0: // Small 2x2 square
+                                if (startX + 1 < logicalWidth && startY + 1 < logicalHeight) {
+                                    logicalGrid[startY][startX] = 1.0;
+                                    logicalGrid[startY][startX + 1] = 1.0;
+                                    logicalGrid[startY + 1][startX] = 1.0;
+                                    logicalGrid[startY + 1][startX + 1] = 1.0;
+                                }
+                                break;
+                                
+                            case 1: // Horizontal line of 2-3 dots (scaled down)
+                                const lineLength = 2 + Math.floor(Math.random() * 2);
+                                const lineY = startY;
+                                for (let i = 0; i < lineLength && startX + i < logicalWidth; i++) {
+                                    if (lineY < logicalHeight) {
+                                        logicalGrid[lineY][startX + i] = 1.0;
+                                    }
+                                }
+                                break;
+                                
+                            case 2: // Vertical line of 2 dots
+                                const vLineLength = 2;
+                                const lineX = startX;
+                                for (let i = 0; i < vLineLength && startY + i < logicalHeight; i++) {
+                                    if (lineX < logicalWidth) {
+                                        logicalGrid[startY + i][lineX] = 1.0;
+                                    }
+                                }
+                                break;
+                                
+                            case 3: // L-shape
+                                if (startX + 1 < logicalWidth && startY + 1 < logicalHeight) {
+                                    logicalGrid[startY][startX] = 1.0;
+                                    logicalGrid[startY + 1][startX] = 1.0;
+                                    logicalGrid[startY + 1][startX + 1] = 1.0;
+                                }
+                                break;
+                                
+                            case 4: // Scattered 2-3 individual dots
+                                const dotCount = 2 + Math.floor(Math.random() * 2);
+                                for (let i = 0; i < dotCount; i++) {
+                                    const dotX = startX + Math.floor(Math.random() * blockSizeX);
+                                    const dotY = startY + Math.floor(Math.random() * blockSizeY);
+                                    if (dotX < logicalWidth && dotY < logicalHeight) {
+                                        logicalGrid[dotY][dotX] = 1.0;
+                                    }
+                                }
+                                break;
+                                
+                            case 5: // 2x1 rectangular cluster
+                                if (startX + 1 < logicalWidth) {
+                                    logicalGrid[startY][startX] = 1.0;
+                                    logicalGrid[startY][startX + 1] = 1.0;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            
+            // Add some random single dots
+            const randomDots = Math.floor(logicalWidth * logicalHeight * 0.026);
+            for (let i = 0; i < randomDots; i++) {
+                const x = Math.floor(Math.random() * logicalWidth);
+                const y = Math.floor(Math.random() * logicalHeight);
+                if (logicalGrid[y][x] === 0 && Math.random() > 0.7) {
+                    logicalGrid[y][x] = 1.0;
+                }
+            }
+            
+            // Convert logical grid to actual pixel grid (4x4 blocks)
+            for (let ly = 0; ly < logicalHeight; ly++) {
+                for (let lx = 0; lx < logicalWidth; lx++) {
+                    if (logicalGrid[ly][lx] > 0) {
+                        // Draw a 4x4 block for each logical dot
+                        for (let dy = 0; dy < dotSize; dy++) {
+                            for (let dx = 0; dx < dotSize; dx++) {
+                                const actualX = lx * dotSize + dx;
+                                const actualY = ly * dotSize + dy;
+                                if (actualX < gridWidth && actualY < gridHeight) {
+                                    pixelGrid[actualY][actualX] = 1.0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Store speed categories for each logical dot for animation
+            if (!window.dotSpeeds) {
+                window.dotSpeeds = [];
+                for (let y = 0; y < gridHeight; y++) {
+                    window.dotSpeeds[y] = [];
+                    for (let x = 0; x < gridWidth; x++) {
+                        // Assign speed based on logical dot position
+                        const logicalX = Math.floor(x / dotSize);
+                        const logicalY = Math.floor(y / dotSize);
+                        
+                        if (logicalX < logicalWidth && logicalY < logicalHeight && logicalGrid[logicalY][logicalX] > 0) {
+                            // Only assign speed to the top-left pixel of each 4x4 block
+                            if (x % dotSize === 0 && y % dotSize === 0) {
+                                const rand = Math.random();
+                                if (rand < 0.15) {
+                                    window.dotSpeeds[y][x] = 'slow';
+                                } else if (rand < 0.50) {
+                                    window.dotSpeeds[y][x] = 'medium';
+                                } else if (rand < 0.75) {
+                                    window.dotSpeeds[y][x] = 'fast';
+                                } else {
+                                    window.dotSpeeds[y][x] = 'very_fast';
+                                }
+                            } else {
+                                window.dotSpeeds[y][x] = null; // Non-control pixels
+                            }
+                        } else {
+                            window.dotSpeeds[y][x] = null;
+                        }
                     }
                 }
             }
@@ -603,6 +785,11 @@
         function generatePattern() {
             const pattern = document.getElementById('pattern').value;
             const text = document.getElementById('customText').value || 'IONIQ 6 N';
+            
+            // Clear dot speeds when generating new pattern
+            if (pattern === 'dots') {
+                window.dotSpeeds = null;
+            }
             
             switch(pattern) {
                 case 'text':
@@ -622,6 +809,226 @@
             updateStatus(`Generated ${pattern} pattern!`);
         }
         
+        function drawGradientSphere(centerX, centerY, radius, colorType, gridWidth, gridHeight, pulseIntensity = 1.0, sparkles = false) {
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < radius) {
+                        const z = Math.sqrt(Math.max(0, radius * radius - dx * dx - dy * dy));
+                        const normal = {
+                            x: dx / radius,
+                            y: dy / radius,
+                            z: z / radius
+                        };
+                        
+                        // Enhanced lighting with multiple light sources
+                        const light1 = { x: 0.5, y: -0.5, z: 0.7 };
+                        const light2 = { x: -0.3, y: 0.3, z: 0.5 };
+                        const light3 = { x: 0.0, y: 0.0, z: 1.0 };
+                        
+                        const dot1 = normal.x * light1.x + normal.y * light1.y + normal.z * light1.z;
+                        const dot2 = normal.x * light2.x + normal.y * light2.y + normal.z * light2.z;
+                        const dot3 = normal.x * light3.x + normal.y * light3.y + normal.z * light3.z;
+                        
+                        let intensity = Math.max(0, dot1) * 0.6 + Math.max(0, dot2) * 0.3 + Math.max(0, dot3) * 0.2 + 0.15;
+                        intensity *= pulseIntensity;
+                        
+                        // Add rim lighting effect
+                        const rimIntensity = Math.pow(1 - Math.abs(dot3), 2) * 0.4;
+                        intensity += rimIntensity * pulseIntensity;
+                        
+                        // Add sparkle effects if enabled
+                        if (sparkles && Math.random() < 0.02) {
+                            intensity = Math.min(1.5, intensity + Math.random() * 0.8);
+                        }
+                        
+                        let pixelValue;
+                        
+                        if (colorType === 'red') {
+                            const redLevels = colorThemes.red.levels;
+                            const levelIndex = Math.floor(intensity * (redLevels.length - 1));
+                            const color = redLevels[Math.min(levelIndex, redLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity
+                            };
+                        } else if (colorType === 'blue') {
+                            const blueLevels = colorThemes.blue.levels;
+                            const levelIndex = Math.floor(intensity * (blueLevels.length - 1));
+                            const color = blueLevels[Math.min(levelIndex, blueLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity
+                            };
+                        } else if (colorType === 'fusion') {
+                            const whiteLevels = colorThemes.white.levels;
+                            const levelIndex = Math.floor((intensity * 1.4) * (whiteLevels.length - 1));
+                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                            
+                            pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: intensity * 1.4
+                            };
+                        }
+                        
+                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < intensity) {
+                            pixelGrid[y][x] = pixelValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawEclipseRing(centerX, centerY, radius, progress, gridWidth, gridHeight) {
+            const ringThickness = 4;
+            const intensity = 0.9 + Math.sin(progress * Math.PI * 12) * 0.3;
+            
+            // Multiple ring layers for depth
+            for (let layer = 0; layer < 3; layer++) {
+                const layerRadius = radius + layer * 2;
+                const layerThickness = ringThickness - layer;
+                const layerIntensity = intensity * (1 - layer * 0.2);
+                
+                for (let y = 0; y < gridHeight; y++) {
+                    for (let x = 0; x < gridWidth; x++) {
+                        const dx = x - centerX;
+                        const dy = y - centerY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (Math.abs(dist - layerRadius) < layerThickness) {
+                            const ringIntensity = layerIntensity * (1 - Math.abs(dist - layerRadius) / layerThickness);
+                            
+                            // Add pulsing energy pattern
+                            const angle = Math.atan2(dy, dx);
+                            const energyPulse = Math.sin(angle * 8 + progress * Math.PI * 8) * 0.3 + 0.7;
+                            const finalIntensity = ringIntensity * energyPulse;
+                            
+                            const whiteLevels = colorThemes.white.levels;
+                            const levelIndex = Math.floor(finalIntensity * (whiteLevels.length - 1));
+                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                            
+                            const pixelValue = {
+                                isSpecialColor: true,
+                                color: color,
+                                intensity: finalIntensity
+                            };
+                            
+                            if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < finalIntensity) {
+                                pixelGrid[y][x] = pixelValue;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawExplosion(centerX, centerY, radius, progress, flashIntensity, gridWidth, gridHeight) {
+            for (let y = 0; y < gridHeight; y++) {
+                for (let x = 0; x < gridWidth; x++) {
+                    const dx = x - centerX;
+                    const dy = y - centerY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < radius) {
+                        const angle = Math.atan2(dy, dx);
+                        
+                        // Multiple burst patterns for complexity
+                        const burstPattern1 = Math.sin(angle * 12) * 0.4 + 0.6;
+                        const burstPattern2 = Math.sin(angle * 6 + Math.PI/3) * 0.3 + 0.7;
+                        const burstPattern3 = Math.sin(angle * 18) * 0.2 + 0.8;
+                        const combinedBurst = burstPattern1 * burstPattern2 * burstPattern3;
+                        
+                        const distanceFactor = 1 - (dist / radius);
+                        let intensity = distanceFactor * combinedBurst * (0.7 + flashIntensity * 0.6);
+                        
+                        // Add explosive shockwave rings
+                        const ringDistance = (dist / radius) * 8;
+                        const ringEffect = Math.sin(ringDistance - progress * 15) * 0.3 + 0.7;
+                        intensity *= ringEffect;
+                        
+                        const whiteLevels = colorThemes.white.levels;
+                        let levelIndex = Math.floor(intensity * (whiteLevels.length - 1));
+                        let color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                        
+                        const pixelValue = {
+                            isSpecialColor: true,
+                            color: color,
+                            intensity: intensity
+                        };
+                        
+                        // Enhanced sparkle effects
+                        if (Math.random() < 0.15) {
+                            const sparkleIntensity = Math.min(1.8, intensity + Math.random() * 1.2);
+                            const sparkIndex = Math.floor(sparkleIntensity * (whiteLevels.length - 1));
+                            pixelValue.color = whiteLevels[Math.min(sparkIndex, whiteLevels.length - 1)];
+                            pixelValue.intensity = sparkleIntensity;
+                        }
+                        
+                        // Add debris particles
+                        if (Math.random() < 0.08 && dist > radius * 0.3) {
+                            const debrisIntensity = Math.random() * 0.8 + 0.4;
+                            pixelValue.intensity = Math.max(pixelValue.intensity, debrisIntensity);
+                        }
+                        
+                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < pixelValue.intensity) {
+                            pixelGrid[y][x] = pixelValue;
+                        }
+                    }
+                }
+            }
+        }
+        
+        function drawEnergyWaves(centerX, centerY, radius, intensity, gridWidth, gridHeight) {
+            const waveCount = 5;
+            
+            for (let wave = 0; wave < waveCount; wave++) {
+                const waveRadius = radius - (wave * 6);
+                const waveThickness = 3;
+                const waveIntensity = intensity * (1 - wave * 0.15);
+                
+                if (waveRadius > 0) {
+                    for (let y = 0; y < gridHeight; y++) {
+                        for (let x = 0; x < gridWidth; x++) {
+                            const dx = x - centerX;
+                            const dy = y - centerY;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (Math.abs(dist - waveRadius) < waveThickness) {
+                                const currentWaveIntensity = waveIntensity * (1 - Math.abs(dist - waveRadius) / waveThickness);
+                                
+                                // Add wave interference patterns
+                                const angle = Math.atan2(dy, dx);
+                                const interference = Math.sin(angle * 6 + wave * 2) * 0.4 + 0.8;
+                                const finalIntensity = currentWaveIntensity * interference;
+                                
+                                const whiteLevels = colorThemes.white.levels;
+                                const levelIndex = Math.floor(finalIntensity * (whiteLevels.length - 1));
+                                const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                                
+                                const pixelValue = {
+                                    isSpecialColor: true,
+                                    color: color,
+                                    intensity: finalIntensity
+                                };
+                                
+                                if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < finalIntensity) {
+                                    pixelGrid[y][x] = pixelValue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
         function animateDisplay() {
             const animation = document.getElementById('animation').value;
             const duration = parseInt(document.getElementById('duration').value) * 1000;
@@ -634,19 +1041,20 @@
             if (isAnimating) {
                 cancelAnimationFrame(animationFrame);
                 isAnimating = false;
-                // Clean up matrix columns when stopping animation
-                if (window.matrixColumns) {
-                    delete window.matrixColumns;
-                }
-                // Clean up equalizer bars when stopping animation
-                if (window.equalizerBars) {
-                    delete window.equalizerBars;
-                }
+                if (window.matrixColumns) delete window.matrixColumns;
+                if (window.equalizerBars) delete window.equalizerBars;
+            }
+            
+            // Initialize countdown timer if needed
+            if (animation === 'countdown') {
+                const countdownInput = document.getElementById('countdownTime').value;
+                const totalSeconds = parseTimeInput(countdownInput);
+                countdownDuration = totalSeconds;
+                countdownStartTime = Date.now();
             }
             
             isAnimating = true;
             
-            // Update button visibility
             document.getElementById('animateBtn').style.display = 'none';
             document.getElementById('pauseBtn').style.display = 'inline-block';
             
@@ -658,16 +1066,9 @@
             function animate() {
                 if (!isAnimating || Date.now() - startTime > duration) {
                     isAnimating = false;
-                    // Clean up matrix columns when animation ends
-                    if (window.matrixColumns) {
-                        delete window.matrixColumns;
-                    }
-                    // Clean up equalizer bars when animation ends
-                    if (window.equalizerBars) {
-                        delete window.equalizerBars;
-                    }
+                    if (window.matrixColumns) delete window.matrixColumns;
+                    if (window.equalizerBars) delete window.equalizerBars;
                     
-                    // Update button visibility
                     document.getElementById('animateBtn').style.display = 'inline-block';
                     document.getElementById('pauseBtn').style.display = 'none';
                     
@@ -678,10 +1079,128 @@
                 }
                 
                 const elapsed = Date.now() - startTime;
+                const { gridWidth, gridHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
                 
                 switch(animation) {
+                    case 'countdown':
+                        if (countdownStartTime) {
+                            const elapsedSeconds = Math.floor((Date.now() - countdownStartTime) / 1000);
+                            const remainingSeconds = Math.max(0, countdownDuration - elapsedSeconds);
+                            const timeString = formatTime(remainingSeconds);
+                            generateTextPattern(timeString);
+                        }
+                        break;
+                        
+                    case 'dots_flicker':
+                        // Dedicated dots flicker animation for 4x4 blocks
+                        const dotSize = 4;
+                        
+                        // Make sure we have dot speeds initialized
+                        if (!window.dotSpeeds) {
+                            // Initialize dot speeds for existing dots
+                            const { gridWidth, gridHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
+                            window.dotSpeeds = [];
+                            for (let y = 0; y < gridHeight; y++) {
+                                window.dotSpeeds[y] = [];
+                                for (let x = 0; x < gridWidth; x++) {
+                                    // Only assign speeds to control pixels (top-left of each 4x4 block)
+                                    if (originalGrid[y][x] > 0 && x % dotSize === 0 && y % dotSize === 0) {
+                                        const rand = Math.random();
+                                        if (rand < 0.15) {
+                                            window.dotSpeeds[y][x] = 'slow';
+                                        } else if (rand < 0.50) {
+                                            window.dotSpeeds[y][x] = 'medium';
+                                        } else if (rand < 0.75) {
+                                            window.dotSpeeds[y][x] = 'fast';
+                                        } else {
+                                            window.dotSpeeds[y][x] = 'very_fast';
+                                        }
+                                    } else {
+                                        window.dotSpeeds[y][x] = null;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Variable speed flickering animation for 4x4 blocks
+                        for (let y = 0; y < pixelGrid.length; y += dotSize) {
+                            for (let x = 0; x < pixelGrid[y].length; x += dotSize) {
+                                // Check if this is a control pixel with speed data
+                                if (window.dotSpeeds && window.dotSpeeds[y] && window.dotSpeeds[y][x]) {
+                                    const speedCategory = window.dotSpeeds[y][x];
+                                    let flickerRate = 0;
+                                    
+                                    // Set flicker rates based on speed category
+                                    switch(speedCategory) {
+                                        case 'slow':
+                                            flickerRate = 0.008; // 0.8% chance per frame
+                                            break;
+                                        case 'medium':
+                                            flickerRate = 0.025; // 2.5% chance per frame
+                                            break;
+                                        case 'fast':
+                                            flickerRate = 0.055; // 5.5% chance per frame
+                                            break;
+                                        case 'very_fast':
+                                            flickerRate = 0.12; // 12% chance per frame
+                                            break;
+                                    }
+                                    
+                                    // Apply speed-based flickering to entire 4x4 block
+                                    if (Math.random() < flickerRate) {
+                                        const currentState = pixelGrid[y][x] > 0;
+                                        const newState = currentState ? 0 : 1.0;
+                                        
+                                        // Toggle entire 4x4 block
+                                        for (let dy = 0; dy < dotSize; dy++) {
+                                            for (let dx = 0; dx < dotSize; dx++) {
+                                                const pixelY = y + dy;
+                                                const pixelX = x + dx;
+                                                if (pixelY < pixelGrid.length && pixelX < pixelGrid[pixelY].length) {
+                                                    // Only toggle if this pixel was part of original pattern
+                                                    if (originalGrid[pixelY][pixelX] > 0) {
+                                                        pixelGrid[pixelY][pixelX] = newState;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Occasionally add temporary dots
+                        if (Math.random() < 0.001) {
+                            const randomX = Math.floor(Math.random() * (pixelGrid[0].length / dotSize)) * dotSize;
+                            const randomY = Math.floor(Math.random() * (pixelGrid.length / dotSize)) * dotSize;
+                            
+                            // Add temporary 4x4 dot
+                            for (let dy = 0; dy < dotSize; dy++) {
+                                for (let dx = 0; dx < dotSize; dx++) {
+                                    const pixelY = randomY + dy;
+                                    const pixelX = randomX + dx;
+                                    if (pixelY < pixelGrid.length && pixelX < pixelGrid[pixelY].length && 
+                                        originalGrid[pixelY][pixelX] === 0) {
+                                        pixelGrid[pixelY][pixelX] = 1.0;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Remove temporary dots
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                if (originalGrid[y][x] === 0 && pixelGrid[y][x] > 0 && Math.random() < 0.02) {
+                                    pixelGrid[y][x] = 0;
+                                }
+                            }
+                        }
+                        break;
+                        
                     case 'pulse':
                         const pulseValue = (Math.sin(elapsed / 200) + 1) / 2;
+                        
+                        // Regular pulse for all patterns
                         for (let y = 0; y < pixelGrid.length; y++) {
                             for (let x = 0; x < pixelGrid[y].length; x++) {
                                 if (originalGrid[y][x] > 0) {
@@ -691,19 +1210,199 @@
                         }
                         break;
                         
+                    case 'blink':
+                        const shouldShow = Math.floor(elapsed / 500) % 2 === 0;
+                        
+                        // Regular blink for all patterns
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                pixelGrid[y][x] = shouldShow ? originalGrid[y][x] : 0;
+                            }
+                        }
+                        break;
+                        
+                    case 'glitch':
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                pixelGrid[y][x] = originalGrid[y][x];
+                            }
+                        }
+                        
+                        if (Math.floor(elapsed / 150) % 3 !== 0) {
+                            for (let y = 0; y < pixelGrid.length; y++) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    if (originalGrid[y][x] > 0 && Math.random() < 0.15) {
+                                        if (Math.random() < 0.5) {
+                                            pixelGrid[y][x] = 0;
+                                        } else {
+                                            pixelGrid[y][x] = Math.random();
+                                        }
+                                    }
+                                    if (originalGrid[y][x] === 0 && Math.random() < 0.05) {
+                                        pixelGrid[y][x] = Math.random() * 0.7;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'laser':
+                        const totalHeight = pixelGrid.length;
+                        const scanCycleTime = 2000;
+                        const currentTime = elapsed % scanCycleTime;
+                        const sweepProgress = currentTime / scanCycleTime;
+                        
+                        const upwardSweep = sweepProgress * totalHeight;
+                        const downwardSweep = totalHeight - (sweepProgress * totalHeight);
+                        
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            for (let x = 0; x < pixelGrid[y].length; x++) {
+                                pixelGrid[y][x] = originalGrid[y][x] * 0.4;
+                            }
+                        }
+                        
+                        for (let y = 0; y < pixelGrid.length; y++) {
+                            let scanIntensity = 0;
+                            
+                            const distanceFromUpSweep = Math.abs(y - upwardSweep);
+                            if (distanceFromUpSweep < 3) {
+                                if (distanceFromUpSweep < 0.5) {
+                                    scanIntensity = Math.max(scanIntensity, 1.0);
+                                } else if (distanceFromUpSweep < 1.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.8);
+                                } else {
+                                    scanIntensity = Math.max(scanIntensity, 0.6);
+                                }
+                            }
+                            
+                            const distanceFromDownSweep = Math.abs(y - downwardSweep);
+                            if (distanceFromDownSweep < 2.5) {
+                                if (distanceFromDownSweep < 0.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.9);
+                                } else if (distanceFromDownSweep < 1.5) {
+                                    scanIntensity = Math.max(scanIntensity, 0.7);
+                                }
+                            }
+                            
+                            if (scanIntensity > 0) {
+                                for (let x = 0; x < pixelGrid[y].length; x++) {
+                                    if (originalGrid[y][x] > 0) {
+                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], originalGrid[y][x] * scanIntensity);
+                                    } else {
+                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], scanIntensity * 0.3);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        const whiteLineTime = (elapsed * 1.3) % scanCycleTime;
+                        const whiteProgress = whiteLineTime / scanCycleTime;
+                        const whiteSweepUp = whiteProgress * totalHeight;
+                        const whiteSweepDown = totalHeight - (whiteProgress * totalHeight);
+                        
+                        const whiteY1 = Math.floor(whiteSweepUp);
+                        const whiteY2 = Math.floor(whiteSweepDown);
+                        
+                        if (whiteY1 >= 0 && whiteY1 < pixelGrid.length) {
+                            for (let x = 0; x < pixelGrid[whiteY1].length; x++) {
+                                pixelGrid[whiteY1][x] = Math.max(pixelGrid[whiteY1][x], 0.95);
+                            }
+                        }
+                        
+                        if (whiteY2 >= 0 && whiteY2 < pixelGrid.length) {
+                            for (let x = 0; x < pixelGrid[whiteY2].length; x++) {
+                                pixelGrid[whiteY2][x] = Math.max(pixelGrid[whiteY2][x], 0.9);
+                            }
+                        }
+                        break;
+                        
+                    case 'heartbeat':
+                        for (let y = 0; y < gridHeight; y++) {
+                            for (let x = 0; x < gridWidth; x++) {
+                                pixelGrid[y][x] = 0;
+                            }
+                        }
+                        
+                        const beatTime = (elapsed / 1000) * 1.2;
+                        const beatCycle = beatTime % 1;
+                        
+                        let heartScale = 1.0;
+                        let intensity = 0.8;
+                        
+                        if (beatCycle < 0.15) {
+                            const lubProgress = beatCycle / 0.15;
+                            heartScale = 1.0 + Math.sin(lubProgress * Math.PI) * 0.8;
+                            intensity = 0.8 + Math.sin(lubProgress * Math.PI) * 0.6;
+                        } else if (beatCycle < 0.35) {
+                            heartScale = 1.0;
+                            intensity = 0.8;
+                        } else if (beatCycle < 0.45) {
+                            const dubProgress = (beatCycle - 0.35) / 0.1;
+                            heartScale = 1.0 + Math.sin(dubProgress * Math.PI) * 0.5;
+                            intensity = 0.8 + Math.sin(dubProgress * Math.PI) * 0.5;
+                        } else {
+                            heartScale = 1.0;
+                            intensity = 0.8;
+                        }
+                        
+                        const animatedHeart = [
+                            [0,0,0,1,1,1,1,1,0,0,0,0,0,0,1,1,1,1,1,0,0,0],
+                            [0,0,1,1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,1,0,0],
+                            [0,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,0],
+                            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+                            [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                            [0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+                            [0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0],
+                            [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0],
+                            [0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0],
+                            [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0]
+                        ];
+                        
+                        const heartCenterX = gridWidth / 2;
+                        const heartCenterY = gridHeight / 2;
+                        const scaledHeartWidth = Math.floor(animatedHeart[0].length * heartScale);
+                        const scaledHeartHeight = Math.floor(animatedHeart.length * heartScale);
+                        const startX = Math.floor(heartCenterX - scaledHeartWidth / 2);
+                        const startY = Math.floor(heartCenterY - scaledHeartHeight / 2);
+                        
+                        for (let y = 0; y < scaledHeartHeight; y++) {
+                            for (let x = 0; x < scaledHeartWidth; x++) {
+                                const sourceY = Math.floor(y / heartScale);
+                                const sourceX = Math.floor(x / heartScale);
+                                
+                                if (sourceY < animatedHeart.length && sourceX < animatedHeart[0].length && 
+                                    animatedHeart[sourceY][sourceX] === 1) {
+                                    
+                                    const pixelX = startX + x;
+                                    const pixelY = startY + y;
+                                    
+                                    if (pixelX >= 0 && pixelX < gridWidth && pixelY >= 0 && pixelY < gridHeight) {
+                                        pixelGrid[pixelY][pixelX] = intensity;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
                     case 'collision':
-                        // Epic sphere collision animation
-                        const { gridWidth, gridHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
                         const centerX = gridWidth / 2;
                         const centerY = gridHeight / 2;
-                        const sphereRadius = Math.min(gridWidth, gridHeight) * 0.15; // Smaller spheres for collision
+                        const sphereRadius = Math.min(gridWidth, gridHeight) * 0.15;
                         
-                        // Animation phases with precise timing
                         const totalDuration = duration;
-                        const approachTime = totalDuration * 0.4;    // 40% - spheres approach
-                        const eclipseTime = totalDuration * 0.1;     // 10% - eclipse moment
-                        const explosionTime = totalDuration * 0.2;   // 20% - explosion
-                        const fusionTime = totalDuration * 0.3;      // 30% - fusion and aftermath
+                        const approachTime = totalDuration * 0.35;
+                        const eclipseTime = totalDuration * 0.15;
+                        const explosionTime = totalDuration * 0.25;
+                        const fusionTime = totalDuration * 0.25;
                         
                         let phase = 'approach';
                         let phaseProgress = 0;
@@ -722,7 +1421,6 @@
                             phaseProgress = (elapsed - approachTime - eclipseTime - explosionTime) / fusionTime;
                         }
                         
-                        // Clear canvas - reset all pixels
                         for (let y = 0; y < gridHeight; y++) {
                             for (let x = 0; x < gridWidth; x++) {
                                 pixelGrid[y][x] = 0;
@@ -730,203 +1428,176 @@
                         }
                         
                         if (phase === 'approach') {
-                            // Two spheres moving toward each other
-                            const startDistance = gridWidth * 0.4;
-                            const currentDistance = startDistance * (1 - phaseProgress);
+                            const startDistance = gridWidth * 0.45;
+                            const currentDistance = startDistance * (1 - Math.pow(phaseProgress, 0.8));
                             
                             const leftSphereX = centerX - currentDistance;
                             const rightSphereX = centerX + currentDistance;
                             
-                            // Draw red sphere (left)
-                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight);
+                            // Add acceleration effects as spheres get closer
+                            const speedIntensity = 1 + phaseProgress * 1.5;
+                            const trailLength = Math.floor(phaseProgress * 8);
                             
-                            // Draw blue sphere (right)
-                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight);
+                            // Draw motion trails
+                            for (let trail = 0; trail < trailLength; trail++) {
+                                const trailDistance = currentDistance + trail * 4;
+                                const trailAlpha = (1 - trail / trailLength) * 0.6;
+                                const leftTrailX = centerX - trailDistance;
+                                const rightTrailX = centerX + trailDistance;
+                                
+                                if (leftTrailX > 0) {
+                                    drawGradientSphere(leftTrailX, centerY, sphereRadius * 0.8, 'red', gridWidth, gridHeight, trailAlpha, false);
+                                }
+                                if (rightTrailX < gridWidth) {
+                                    drawGradientSphere(rightTrailX, centerY, sphereRadius * 0.8, 'blue', gridWidth, gridHeight, trailAlpha, false);
+                                }
+                            }
+                            
+                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight, speedIntensity, true);
+                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight, speedIntensity, true);
                             
                         } else if (phase === 'eclipse') {
-                            // Eclipse/singularity moment - spheres overlap
-                            const overlap = phaseProgress * sphereRadius * 0.8;
+                            const overlap = Math.pow(phaseProgress, 0.7) * sphereRadius * 0.9;
                             const leftSphereX = centerX - overlap;
                             const rightSphereX = centerX + overlap;
                             
-                            // Draw overlapping spheres with increasing intensity
-                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight);
-                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight);
+                            // Intense energy buildup
+                            const energyIntensity = 1 + phaseProgress * 2;
                             
-                            // Add eclipse ring effect
-                            const ringRadius = sphereRadius * (1.2 + phaseProgress * 0.5);
-                            drawEclipseRing(centerX, centerY, ringRadius, phaseProgress, gridWidth, gridHeight);
+                            drawGradientSphere(leftSphereX, centerY, sphereRadius, 'red', gridWidth, gridHeight, energyIntensity, true);
+                            drawGradientSphere(rightSphereX, centerY, sphereRadius, 'blue', gridWidth, gridHeight, energyIntensity, true);
                             
-                        } else if (phase === 'explosion') {
-                            // Explosion and flash
-                            const explosionRadius = sphereRadius * (1 + phaseProgress * 3);
-                            const flashIntensity = Math.sin(phaseProgress * Math.PI * 4) * (1 - phaseProgress);
+                            // Multiple pulsing energy rings
+                            for (let ring = 0; ring < 3; ring++) {
+                                const ringRadius = sphereRadius * (1.3 + phaseProgress * 0.8 + ring * 0.3);
+                                const ringProgress = phaseProgress + ring * 0.2;
+                                drawEclipseRing(centerX, centerY, ringRadius, ringProgress, gridWidth, gridHeight);
+                            }
                             
-                            // Draw explosion burst
-                            drawExplosion(centerX, centerY, explosionRadius, phaseProgress, flashIntensity, gridWidth, gridHeight);
-                            
-                            // Flash effect
-                            if (flashIntensity > 0.5) {
-                                for (let y = 0; y < gridHeight; y++) {
-                                    for (let x = 0; x < gridWidth; x++) {
-                                        if (Math.random() < 0.3) {
-                                            pixelGrid[y][x] = Math.max(pixelGrid[y][x], flashIntensity);
+                            // Add electrical arcs between spheres
+                            if (phaseProgress > 0.3) {
+                                for (let arc = 0; arc < 5; arc++) {
+                                    const arcY = centerY + (Math.random() - 0.5) * sphereRadius;
+                                    const arcStartX = leftSphereX + sphereRadius * 0.8;
+                                    const arcEndX = rightSphereX - sphereRadius * 0.8;
+                                    
+                                    for (let x = arcStartX; x <= arcEndX; x += 2) {
+                                        const arcIntensity = Math.random() * 0.8 + 0.4;
+                                        const arcPixelY = Math.floor(arcY + Math.sin(x * 0.3) * 3);
+                                        
+                                        if (arcPixelY >= 0 && arcPixelY < gridHeight && x >= 0 && x < gridWidth) {
+                                            const whiteLevels = colorThemes.white.levels;
+                                            const levelIndex = Math.floor(arcIntensity * (whiteLevels.length - 1));
+                                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                                            
+                                            if (Math.random() < 0.7) {
+                                                pixelGrid[arcPixelY][Math.floor(x)] = {
+                                                    isSpecialColor: true,
+                                                    color: color,
+                                                    intensity: arcIntensity
+                                                };
+                                            }
                                         }
                                     }
                                 }
                             }
                             
-                        } else if (phase === 'fusion') {
-                            // Final fused sphere with energy waves
-                            const fusedRadius = sphereRadius * (1.5 - phaseProgress * 0.3);
-                            const waveIntensity = (1 - phaseProgress) * 0.5;
+                        } else if (phase === 'explosion') {
+                            const explosionRadius = sphereRadius * (1.2 + phaseProgress * 4);
+                            const flashIntensity = Math.sin(phaseProgress * Math.PI * 6) * (1 - phaseProgress * 0.3);
                             
-                            // Draw fused purple/white sphere
-                            drawGradientSphere(centerX, centerY, fusedRadius, 'fusion', gridWidth, gridHeight);
+                            drawExplosion(centerX, centerY, explosionRadius, phaseProgress, flashIntensity, gridWidth, gridHeight);
                             
-                            // Add energy waves
-                            const waveRadius = fusedRadius + (phaseProgress * sphereRadius * 2);
-                            drawEnergyWaves(centerX, centerY, waveRadius, waveIntensity, gridWidth, gridHeight);
-                        }
-                        break;
-                        
-                    case 'blink':
-                        const shouldShow = Math.floor(elapsed / 500) % 2 === 0;
-                        if (shouldShow) {
-                            for (let y = 0; y < pixelGrid.length; y++) {
-                                for (let x = 0; x < pixelGrid[y].length; x++) {
-                                    pixelGrid[y][x] = originalGrid[y][x];
-                                }
-                            }
-                        } else {
-                            for (let y = 0; y < pixelGrid.length; y++) {
-                                for (let x = 0; x < pixelGrid[y].length; x++) {
-                                    pixelGrid[y][x] = 0;
-                                }
-                            }
-                        }
-                        break;
-                        
-                    case 'laser':
-                        // Smooth sweeping laser scan across visible text
-                        const totalHeight = pixelGrid.length;
-                        const scanCycleTime = 2000; // 2 seconds per complete sweep
-                        const currentTime = elapsed % scanCycleTime;
-                        const sweepProgress = currentTime / scanCycleTime;
-                        
-                        // Calculate smooth sweep positions
-                        const upwardSweep = sweepProgress * totalHeight; // 0 to height (bottom to top)
-                        const downwardSweep = totalHeight - (sweepProgress * totalHeight); // height to 0 (top to bottom)
-                        const offsetSweep = ((sweepProgress + 0.33) % 1) * totalHeight; // Offset by 1/3
-                        
-                        // Start with original text visible but dimmed
-                        for (let y = 0; y < pixelGrid.length; y++) {
-                            for (let x = 0; x < pixelGrid[y].length; x++) {
-                                pixelGrid[y][x] = originalGrid[y][x] * 0.4; // Keep text visible but dim
-                            }
-                        }
-                        
-                        // Add sweeping scan lines that brighten the text
-                        for (let y = 0; y < pixelGrid.length; y++) {
-                            let scanIntensity = 0;
-                            
-                            // Upward moving bright line
-                            const distanceFromUpSweep = Math.abs(y - upwardSweep);
-                            if (distanceFromUpSweep < 3) {
-                                if (distanceFromUpSweep < 0.5) {
-                                    scanIntensity = Math.max(scanIntensity, 1.0); // Brightest center
-                                } else if (distanceFromUpSweep < 1.5) {
-                                    scanIntensity = Math.max(scanIntensity, 0.8); // Medium glow
-                                } else {
-                                    scanIntensity = Math.max(scanIntensity, 0.6); // Outer glow
-                                }
-                            }
-                            
-                            // Downward moving bright line
-                            const distanceFromDownSweep = Math.abs(y - downwardSweep);
-                            if (distanceFromDownSweep < 2.5) {
-                                if (distanceFromDownSweep < 0.5) {
-                                    scanIntensity = Math.max(scanIntensity, 0.9);
-                                } else if (distanceFromDownSweep < 1.5) {
-                                    scanIntensity = Math.max(scanIntensity, 0.7);
-                                }
-                            }
-                            
-                            // Offset sweep line
-                            const distanceFromOffsetSweep = Math.abs(y - offsetSweep);
-                            if (distanceFromOffsetSweep < 2) {
-                                if (distanceFromOffsetSweep < 0.5) {
-                                    scanIntensity = Math.max(scanIntensity, 0.8);
-                                }
-                            }
-                            
-                            // Apply scan intensity to the entire row
-                            if (scanIntensity > 0) {
-                                for (let x = 0; x < pixelGrid[y].length; x++) {
-                                    // Brighten text where it exists, add scan line everywhere
-                                    if (originalGrid[y][x] > 0) {
-                                        // Brighten existing text
-                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], originalGrid[y][x] * scanIntensity);
-                                    } else {
-                                        // Add faint scan line in empty areas
-                                        pixelGrid[y][x] = Math.max(pixelGrid[y][x], scanIntensity * 0.3);
+                            // Screen-wide flash effects
+                            if (flashIntensity > 0.6) {
+                                for (let y = 0; y < gridHeight; y++) {
+                                    for (let x = 0; x < gridWidth; x++) {
+                                        if (Math.random() < 0.4) {
+                                            const flashValue = flashIntensity * (0.5 + Math.random() * 0.5);
+                                            pixelGrid[y][x] = Math.max(pixelGrid[y][x] || 0, flashValue);
+                                        }
                                     }
                                 }
                             }
-                        }
-                        
-                        // Add bright white scan lines
-                        const whiteLineTime = (elapsed * 1.3) % scanCycleTime;
-                        const whiteProgress = whiteLineTime / scanCycleTime;
-                        const whiteSweepUp = whiteProgress * totalHeight;
-                        const whiteSweepDown = totalHeight - (whiteProgress * totalHeight);
-                        
-                        // Draw thin bright white lines
-                        const whiteY1 = Math.floor(whiteSweepUp);
-                        const whiteY2 = Math.floor(whiteSweepDown);
-                        
-                        if (whiteY1 >= 0 && whiteY1 < pixelGrid.length) {
-                            for (let x = 0; x < pixelGrid[whiteY1].length; x++) {
-                                pixelGrid[whiteY1][x] = Math.max(pixelGrid[whiteY1][x], 0.95);
+                            
+                            // Flying debris particles
+                            for (let debris = 0; debris < 20; debris++) {
+                                const debrisAngle = (debris / 20) * Math.PI * 2;
+                                const debrisSpeed = phaseProgress * explosionRadius * 1.5;
+                                const debrisX = centerX + Math.cos(debrisAngle) * debrisSpeed;
+                                const debrisY = centerY + Math.sin(debrisAngle) * debrisSpeed;
+                                
+                                if (debrisX >= 0 && debrisX < gridWidth && debrisY >= 0 && debrisY < gridHeight) {
+                                    const debrisIntensity = (1 - phaseProgress) * (Math.random() * 0.6 + 0.4);
+                                    pixelGrid[Math.floor(debrisY)][Math.floor(debrisX)] = Math.max(
+                                        pixelGrid[Math.floor(debrisY)][Math.floor(debrisX)] || 0, 
+                                        debrisIntensity
+                                    );
+                                }
                             }
-                        }
-                        
-                        if (whiteY2 >= 0 && whiteY2 < pixelGrid.length) {
-                            for (let x = 0; x < pixelGrid[whiteY2].length; x++) {
-                                pixelGrid[whiteY2][x] = Math.max(pixelGrid[whiteY2][x], 0.9);
+                            
+                        } else if (phase === 'fusion') {
+                            const fusedRadius = sphereRadius * (1.8 - phaseProgress * 0.5);
+                            const waveIntensity = (1 - phaseProgress * 0.7) * 0.8;
+                            const coreIntensity = 1.2 + Math.sin(phaseProgress * Math.PI * 4) * 0.4;
+                            
+                            // Pulsing fusion core
+                            drawGradientSphere(centerX, centerY, fusedRadius, 'fusion', gridWidth, gridHeight, coreIntensity, true);
+                            
+                            // Multiple expanding energy waves
+                            for (let wave = 0; wave < 4; wave++) {
+                                const waveRadius = fusedRadius + (phaseProgress * sphereRadius * 3) + wave * 12;
+                                const wavePhaseIntensity = waveIntensity * (1 - wave * 0.2);
+                                drawEnergyWaves(centerX, centerY, waveRadius, wavePhaseIntensity, gridWidth, gridHeight);
+                            }
+                            
+                            // Stabilization particles
+                            if (phaseProgress > 0.5) {
+                                for (let particle = 0; particle < 30; particle++) {
+                                    const particleAngle = (particle / 30) * Math.PI * 2 + phaseProgress * Math.PI;
+                                    const particleRadius = fusedRadius * (1.2 + Math.sin(phaseProgress * Math.PI * 3) * 0.3);
+                                    const particleX = centerX + Math.cos(particleAngle) * particleRadius;
+                                    const particleY = centerY + Math.sin(particleAngle) * particleRadius;
+                                    
+                                    if (particleX >= 0 && particleX < gridWidth && particleY >= 0 && particleY < gridHeight) {
+                                        const particleIntensity = waveIntensity * (Math.random() * 0.4 + 0.6);
+                                        const whiteLevels = colorThemes.white.levels;
+                                        const levelIndex = Math.floor(particleIntensity * (whiteLevels.length - 1));
+                                        const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
+                                        
+                                        pixelGrid[Math.floor(particleY)][Math.floor(particleX)] = {
+                                            isSpecialColor: true,
+                                            color: color,
+                                            intensity: particleIntensity
+                                        };
+                                    }
+                                }
                             }
                         }
                         break;
                         
                     case 'matrix':
-                        // Matrix rain animation using custom text
-                        const { gridWidth: matrixWidth, gridHeight: matrixHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
                         const customTextForMatrix = document.getElementById('customText').value || 'IONIQ 6 N';
                         const matrixColorScheme = document.getElementById('matrixColor').value;
                         
-                        // Clear the screen
-                        for (let y = 0; y < matrixHeight; y++) {
-                            for (let x = 0; x < matrixWidth; x++) {
+                        for (let y = 0; y < gridHeight; y++) {
+                            for (let x = 0; x < gridWidth; x++) {
                                 pixelGrid[y][x] = 0;
                             }
                         }
                         
-                        // Matrix rain parameters - reinitialize each time to get fresh text
                         if (!window.matrixColumns || elapsed < 100) {
                             if (window.matrixColumns) delete window.matrixColumns;
                             window.matrixColumns = [];
                             
-                            // Split text into words for readable falling
                             const words = customTextForMatrix.trim().split(/\s+/);
-                            
-                            // Create multiple falling columns with individual characters
-                            const columnCount = 25; // Number of falling streams
-                            const columnWidth = Math.floor(matrixWidth / columnCount);
+                            const columnCount = 25;
+                            const columnWidth = Math.floor(gridWidth / columnCount);
                             
                             for (let i = 0; i < columnCount; i++) {
                                 window.matrixColumns.push({
                                     x: i * columnWidth + Math.random() * (columnWidth - 4),
-                                    y: Math.random() * -matrixHeight,
+                                    y: Math.random() * -gridHeight,
                                     speed: 0.5 + Math.random() * 1.0,
                                     trail: [],
                                     brightness: 0.8 + Math.random() * 0.2,
@@ -937,13 +1608,10 @@
                             }
                         }
                         
-                        // Update matrix columns
                         for (let col of window.matrixColumns) {
-                            // Move column down
                             col.y += col.speed;
                             
-                            // Reset column when it goes off screen
-                            if (col.y > matrixHeight + 20) {
+                            if (col.y > gridHeight + 20) {
                                 col.y = Math.random() * -30 - 20;
                                 col.speed = 0.5 + Math.random() * 1.0;
                                 col.trail = [];
@@ -952,11 +1620,9 @@
                                 col.currentCharIndex = 0;
                             }
                             
-                            // Get current character from current word
                             const currentWord = col.words[col.currentWordIndex];
                             const currentChar = currentWord[col.currentCharIndex];
                             
-                            // Move to next character occasionally
                             if (Math.random() < 0.1) {
                                 col.currentCharIndex++;
                                 if (col.currentCharIndex >= currentWord.length) {
@@ -965,23 +1631,20 @@
                                 }
                             }
                             
-                            // Update trail
                             col.trail.unshift({ y: col.y, char: currentChar });
                             if (col.trail.length > 15) {
                                 col.trail.pop();
                             }
                             
-                            // Draw the trail
                             for (let i = 0; i < col.trail.length; i++) {
                                 const trailChar = col.trail[i];
                                 const charY = Math.floor(trailChar.y - i * 6);
                                 
-                                if (charY >= 0 && charY < matrixHeight - 5) {
+                                if (charY >= 0 && charY < gridHeight - 5) {
                                     const char = trailChar.char ? trailChar.char.toUpperCase() : ' ';
                                     const charData = smallPixelFont[char];
                                     
                                     if (charData) {
-                                        // Calculate brightness
                                         let brightness;
                                         if (i === 0) {
                                             brightness = col.brightness;
@@ -989,18 +1652,16 @@
                                             brightness = Math.max(0.1, (1 - i / col.trail.length) * 0.8);
                                         }
                                         
-                                        // Draw character (3x5)
                                         for (let y = 0; y < 5; y++) {
                                             for (let x = 0; x < 3; x++) {
                                                 const pixelX = Math.floor(col.x) + x;
                                                 const pixelY = charY + y;
                                                 
-                                                if (pixelX < matrixWidth && pixelY < matrixHeight && pixelX >= 0 && pixelY >= 0) {
+                                                if (pixelX < gridWidth && pixelY < gridHeight && pixelX >= 0 && pixelY >= 0) {
                                                     if (charData[y] && charData[y][x]) {
                                                         let pixelValue;
                                                         
                                                         if (i === 0) {
-                                                            // Leading character in white
                                                             const whiteLevels = colorThemes.white.levels;
                                                             const levelIndex = Math.floor(brightness * (whiteLevels.length - 1));
                                                             const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
@@ -1011,7 +1672,6 @@
                                                                 intensity: brightness
                                                             };
                                                         } else {
-                                                            // Trail characters in selected color scheme
                                                             const selectedLevels = colorThemes[matrixColorScheme].levels;
                                                             const levelIndex = Math.floor(brightness * (selectedLevels.length - 1));
                                                             const color = selectedLevels[Math.min(levelIndex, selectedLevels.length - 1)];
@@ -1023,7 +1683,6 @@
                                                             };
                                                         }
                                                         
-                                                        // Only set if brighter than existing pixel
                                                         if (!pixelGrid[pixelY][pixelX] || (pixelGrid[pixelY][pixelX].intensity || 0) < brightness) {
                                                             pixelGrid[pixelY][pixelX] = pixelValue;
                                                         }
@@ -1038,30 +1697,24 @@
                         break;
                         
                     case 'equalizer':
-                        // Graphic Equalizer Animation
-                        const { gridWidth: eqWidth, gridHeight: eqHeight } = { gridWidth: pixelGrid[0].length, gridHeight: pixelGrid.length };
-                        
-                        // Clear the screen
-                        for (let y = 0; y < eqHeight; y++) {
-                            for (let x = 0; x < eqWidth; x++) {
+                        for (let y = 0; y < gridHeight; y++) {
+                            for (let x = 0; x < gridWidth; x++) {
                                 pixelGrid[y][x] = 0;
                             }
                         }
                         
-                        // Initialize equalizer bars if needed
                         if (!window.equalizerBars) {
                             window.equalizerBars = [];
-                            const pairCount = 20; // Number of red/blue pairs
-                            const barWidth = 2; // Width of each individual bar
-                            const pairSpacing = 4; // Space between pairs
+                            const pairCount = 20;
+                            const barWidth = 2;
+                            const pairSpacing = 4;
                             const totalWidth = pairCount * (barWidth * 2 + pairSpacing) - pairSpacing;
-                            const startX = Math.floor((eqWidth - totalWidth) / 2);
+                            const startX = Math.floor((gridWidth - totalWidth) / 2);
                             
                             for (let i = 0; i < pairCount; i++) {
                                 const pairX = startX + i * (barWidth * 2 + pairSpacing);
-                                const frequency = i / (pairCount - 1); // 0 to 1
+                                const frequency = i / (pairCount - 1);
                                 
-                                // Red bar (left in each pair)
                                 window.equalizerBars.push({
                                     x: pairX,
                                     width: barWidth,
@@ -1071,17 +1724,14 @@
                                     peakDecay: 0,
                                     frequency: frequency,
                                     colorType: 'red',
-                                    // Red bars respond more to rhythm and bass
                                     bassResponse: Math.max(0.3, 1.2 - (frequency * 1.5)),
                                     midResponse: frequency > 0.2 && frequency < 0.7 ? 0.8 : 0.3,
                                     trebleResponse: frequency > 0.6 ? 0.9 : 0.2,
-                                    // Red bars are more aggressive - quick rise and fall
                                     riseSpeed: 0.95,
                                     fallSpeed: 0.75,
                                     sensitivity: 1.4
                                 });
                                 
-                                // Blue bar (right in each pair)
                                 window.equalizerBars.push({
                                     x: pairX + barWidth,
                                     width: barWidth,
@@ -1091,11 +1741,9 @@
                                     peakDecay: 0,
                                     frequency: frequency,
                                     colorType: 'blue',
-                                    // Blue bars respond more to melody and harmonics
                                     bassResponse: frequency < 0.4 ? 0.6 : 0.2,
                                     midResponse: frequency > 0.3 && frequency < 0.8 ? 1.1 : 0.4,
                                     trebleResponse: frequency > 0.5 ? 1.3 : 0.3,
-                                    // Blue bars are smoother - slower rise and fall
                                     riseSpeed: 0.6,
                                     fallSpeed: 0.9,
                                     sensitivity: 1.0
@@ -1103,124 +1751,95 @@
                             }
                         }
                         
-                        // Simulate pop music with more complex characteristics
                         const time = elapsed / 1000;
-                        const beatFreq = 2.3; // Slightly faster tempo
+                        const beatFreq = 2.3;
                         
-                        // Multiple musical elements with different timings
                         const kickDrum = Math.max(0, Math.sin(time * beatFreq * Math.PI * 2)) * 0.9;
-                        const snare = Math.max(0, Math.sin((time - 0.22) * beatFreq * Math.PI * 2)) * 0.7; // Offset snare
+                        const snare = Math.max(0, Math.sin((time - 0.22) * beatFreq * Math.PI * 2)) * 0.7;
                         const hiHat = Math.sin(time * beatFreq * 8 * Math.PI * 2) * 0.4 + 0.4;
-                        const bassLine = Math.sin(time * beatFreq * 0.5 * Math.PI * 2) * 0.6 + 0.5; // Slower bass
+                        const bassLine = Math.sin(time * beatFreq * 0.5 * Math.PI * 2) * 0.6 + 0.5;
                         const vocals = Math.sin(time * 0.8 * Math.PI * 2) * 0.5 + 0.5;
                         const synth = Math.sin(time * 1.3 * Math.PI * 2) * 0.4 + 0.3;
-                        const cymbal = Math.max(0, Math.sin(time * 0.25 * Math.PI * 2)) * 0.8; // Occasional crash
+                        const cymbal = Math.max(0, Math.sin(time * 0.25 * Math.PI * 2)) * 0.8;
                         
-                        // Add musical variations
-                        const breakdown = Math.sin(time * 0.1 * Math.PI * 2) > 0.8 ? 0.3 : 1.0; // Occasional quiet parts
-                        const buildup = Math.max(0, Math.sin(time * 0.05 * Math.PI * 2)) * 0.5 + 0.5; // Slow build
+                        const breakdown = Math.sin(time * 0.1 * Math.PI * 2) > 0.8 ? 0.3 : 1.0;
+                        const buildup = Math.max(0, Math.sin(time * 0.05 * Math.PI * 2)) * 0.5 + 0.5;
                         
-                        // Update each bar with different responses
                         for (let bar of window.equalizerBars) {
                             let intensity = 0;
                             const randomFactor = (Math.random() - 0.5) * 0.4;
                             
-                            // Bass frequencies (0-0.3)
                             if (bar.frequency <= 0.3) {
                                 if (bar.colorType === 'red') {
-                                    // Red bars: Aggressive response to drums
                                     intensity = (kickDrum * 1.2 + bassLine * 0.8) * bar.bassResponse;
-                                    intensity += snare * 0.6; // Strong snare response
+                                    intensity += snare * 0.6;
                                 } else {
-                                    // Blue bars: Smoother bass response
                                     intensity = bassLine * bar.bassResponse * 0.9;
-                                    intensity += kickDrum * 0.4; // Gentler kick response
+                                    intensity += kickDrum * 0.4;
                                 }
-                            }
-                            // Mid-low frequencies (0.3-0.6)
-                            else if (bar.frequency <= 0.6) {
+                            } else if (bar.frequency <= 0.6) {
                                 if (bar.colorType === 'red') {
-                                    // Red bars: Punchy mids, strong snare
                                     intensity = (snare * 1.4 + vocals * 0.6 + synth * 0.8) * bar.midResponse;
                                     intensity += cymbal * 0.9;
                                 } else {
-                                    // Blue bars: Melodic content
                                     intensity = (vocals * 1.1 + synth * 1.2 + bassLine * 0.4) * bar.midResponse;
                                 }
-                            }
-                            // High frequencies (0.6-1.0)
-                            else {
+                            } else {
                                 if (bar.colorType === 'red') {
-                                    // Red bars: Sharp, aggressive highs
                                     intensity = (hiHat * 1.3 + cymbal * 1.5 + snare * 0.4) * bar.trebleResponse;
-                                    // Add some sparkle
                                     intensity += Math.sin(time * 5.7 * Math.PI * 2) * 0.3;
                                 } else {
-                                    // Blue bars: Smooth, harmonic highs
                                     intensity = (vocals * 0.8 + synth * 0.9 + hiHat * 0.7) * bar.trebleResponse;
-                                    // Add harmonic overtones
                                     intensity += Math.sin(time * 2.1 * Math.PI * 2) * 0.2;
                                 }
                             }
                             
-                            // Apply musical effects
                             intensity *= breakdown * buildup;
                             intensity += randomFactor;
                             intensity *= bar.sensitivity;
                             
-                            // More dramatic height variations
-                            intensity = Math.max(0, Math.min(1.8, intensity)); // Allow heights above 1.0
-                            bar.targetHeight = intensity * (eqHeight - 2);
+                            intensity = Math.max(0, Math.min(1.8, intensity));
+                            bar.targetHeight = intensity * (gridHeight - 2);
                             
-                            // Different rise/fall speeds for red vs blue
                             if (bar.targetHeight > bar.currentHeight) {
-                                // Rising - use rise speed
                                 bar.currentHeight = bar.currentHeight * (1 - bar.riseSpeed) + bar.targetHeight * bar.riseSpeed;
                             } else {
-                                // Falling - use fall speed  
                                 bar.currentHeight = bar.currentHeight * bar.fallSpeed + bar.targetHeight * (1 - bar.fallSpeed);
                             }
                             
-                            // Enhanced peak hold with different decay rates
                             if (bar.currentHeight > bar.peakHeight) {
                                 bar.peakHeight = bar.currentHeight;
                                 bar.peakDecay = 0;
                             } else {
-                                // Different decay rates for red vs blue
                                 const decayRate = bar.colorType === 'red' ? 0.025 : 0.015;
                                 bar.peakDecay += decayRate;
                                 bar.peakHeight = Math.max(bar.currentHeight, bar.peakHeight - bar.peakDecay);
                             }
                         }
                         
-                        // Draw the equalizer bars
                         for (let bar of window.equalizerBars) {
                             const barHeight = Math.floor(bar.currentHeight);
-                            const peakY = Math.floor(eqHeight - bar.peakHeight - 1);
+                            const peakY = Math.floor(gridHeight - bar.peakHeight - 1);
                             
-                            // Choose color palette
                             const colorPalette = bar.colorType === 'blue' ? colorThemes.blue : colorThemes.red;
                             
-                            // Draw main bar from bottom up
                             for (let y = 0; y < barHeight; y++) {
                                 for (let x = 0; x < bar.width; x++) {
                                     const pixelX = bar.x + x;
-                                    const pixelY = eqHeight - 1 - y; // Draw from bottom
+                                    const pixelY = gridHeight - 1 - y;
                                     
-                                    if (pixelX < eqWidth && pixelY >= 0 && pixelY < eqHeight) {
-                                        // Calculate intensity based on height position
+                                    if (pixelX < gridWidth && pixelY >= 0 && pixelY < gridHeight) {
                                         const heightRatio = y / Math.max(1, barHeight);
                                         let intensity;
                                         
-                                        // Gradient effect - brighter at top
                                         if (heightRatio > 0.8) {
-                                            intensity = 0.9 + heightRatio * 0.1; // Very bright at top
+                                            intensity = 0.9 + heightRatio * 0.1;
                                         } else if (heightRatio > 0.6) {
-                                            intensity = 0.7 + heightRatio * 0.2; // Bright
+                                            intensity = 0.7 + heightRatio * 0.2;
                                         } else if (heightRatio > 0.3) {
-                                            intensity = 0.5 + heightRatio * 0.2; // Medium
+                                            intensity = 0.5 + heightRatio * 0.2;
                                         } else {
-                                            intensity = 0.3 + heightRatio * 0.2; // Dim at bottom
+                                            intensity = 0.3 + heightRatio * 0.2;
                                         }
                                         
                                         const levelIndex = Math.floor(intensity * (colorPalette.levels.length - 1));
@@ -1237,14 +1856,13 @@
                                 }
                             }
                             
-                            // Draw peak indicator (bright white dot)
                             if (bar.peakHeight > 2) {
                                 for (let x = 0; x < bar.width; x++) {
                                     const pixelX = bar.x + x;
                                     
-                                    if (pixelX < eqWidth && peakY >= 0 && peakY < eqHeight) {
+                                    if (pixelX < gridWidth && peakY >= 0 && peakY < gridHeight) {
                                         const whiteLevels = colorThemes.white.levels;
-                                        const peakColor = whiteLevels[whiteLevels.length - 1]; // Brightest white
+                                        const peakColor = whiteLevels[whiteLevels.length - 1];
                                         
                                         const peakPixel = {
                                             isSpecialColor: true,
@@ -1253,33 +1871,6 @@
                                         };
                                         
                                         pixelGrid[peakY][pixelX] = peakPixel;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                        
-                    case 'glitch':
-                        // Reset to original
-                        for (let y = 0; y < pixelGrid.length; y++) {
-                            for (let x = 0; x < pixelGrid[y].length; x++) {
-                                pixelGrid[y][x] = originalGrid[y][x];
-                            }
-                        }
-                        
-                        // Add glitch effects
-                        if (Math.floor(elapsed / 150) % 3 !== 0) {
-                            for (let y = 0; y < pixelGrid.length; y++) {
-                                for (let x = 0; x < pixelGrid[y].length; x++) {
-                                    if (originalGrid[y][x] > 0 && Math.random() < 0.15) {
-                                        if (Math.random() < 0.5) {
-                                            pixelGrid[y][x] = 0;
-                                        } else {
-                                            pixelGrid[y][x] = Math.random();
-                                        }
-                                    }
-                                    if (originalGrid[y][x] === 0 && Math.random() < 0.05) {
-                                        pixelGrid[y][x] = Math.random() * 0.7;
                                     }
                                 }
                             }
@@ -1299,7 +1890,6 @@
                 isAnimating = false;
                 cancelAnimationFrame(animationFrame);
                 
-                // Update button visibility
                 document.getElementById('animateBtn').style.display = 'inline-block';
                 document.getElementById('pauseBtn').style.display = 'none';
                 
@@ -1315,183 +1905,6 @@
             updateStatus('Image saved!');
         }
         
-        function drawGradientSphere(centerX, centerY, radius, colorType, gridWidth, gridHeight) {
-            for (let y = 0; y < gridHeight; y++) {
-                for (let x = 0; x < gridWidth; x++) {
-                    const dx = x - centerX;
-                    const dy = y - centerY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist < radius) {
-                        const z = Math.sqrt(Math.max(0, radius * radius - dx * dx - dy * dy));
-                        const normal = {
-                            x: dx / radius,
-                            y: dy / radius,
-                            z: z / radius
-                        };
-                        
-                        const light = { x: 0.5, y: -0.5, z: 0.7 };
-                        const dot = normal.x * light.x + normal.y * light.y + normal.z * light.z;
-                        let intensity = Math.max(0, dot) * 0.8 + 0.2;
-                        
-                        // Create pixel with specific color information
-                        let pixelValue;
-                        
-                        if (colorType === 'red') {
-                            // Red sphere - use red color palette
-                            const redLevels = colorThemes.red.levels;
-                            const levelIndex = Math.floor(intensity * (redLevels.length - 1));
-                            const color = redLevels[Math.min(levelIndex, redLevels.length - 1)];
-                            
-                            pixelValue = {
-                                isSpecialColor: true,
-                                color: color,
-                                intensity: intensity
-                            };
-                        } else if (colorType === 'blue') {
-                            // Blue sphere - use blue color palette
-                            const blueLevels = colorThemes.blue.levels;
-                            const levelIndex = Math.floor(intensity * (blueLevels.length - 1));
-                            const color = blueLevels[Math.min(levelIndex, blueLevels.length - 1)];
-                            
-                            pixelValue = {
-                                isSpecialColor: true,
-                                color: color,
-                                intensity: intensity
-                            };
-                        } else if (colorType === 'fusion') {
-                            // Fusion sphere - bright white/purple
-                            const whiteLevels = colorThemes.white.levels;
-                            const levelIndex = Math.floor((intensity * 1.2) * (whiteLevels.length - 1));
-                            const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
-                            
-                            pixelValue = {
-                                isSpecialColor: true,
-                                color: color,
-                                intensity: intensity * 1.2
-                            };
-                        }
-                        
-                        // Only set if this pixel is brighter than what's already there
-                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < intensity) {
-                            pixelGrid[y][x] = pixelValue;
-                        }
-                    }
-                }
-            }
-        }
-        
-        function drawEclipseRing(centerX, centerY, radius, progress, gridWidth, gridHeight) {
-            const ringThickness = 3;
-            const intensity = 0.8 + Math.sin(progress * Math.PI * 6) * 0.2;
-            
-            for (let y = 0; y < gridHeight; y++) {
-                for (let x = 0; x < gridWidth; x++) {
-                    const dx = x - centerX;
-                    const dy = y - centerY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (Math.abs(dist - radius) < ringThickness) {
-                        const ringIntensity = intensity * (1 - Math.abs(dist - radius) / ringThickness);
-                        
-                        // Create eclipse ring with white color
-                        const whiteLevels = colorThemes.white.levels;
-                        const levelIndex = Math.floor(ringIntensity * (whiteLevels.length - 1));
-                        const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
-                        
-                        const pixelValue = {
-                            isSpecialColor: true,
-                            color: color,
-                            intensity: ringIntensity
-                        };
-                        
-                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < ringIntensity) {
-                            pixelGrid[y][x] = pixelValue;
-                        }
-                    }
-                }
-            }
-        }
-        
-        function drawExplosion(centerX, centerY, radius, progress, flashIntensity, gridWidth, gridHeight) {
-            for (let y = 0; y < gridHeight; y++) {
-                for (let x = 0; x < gridWidth; x++) {
-                    const dx = x - centerX;
-                    const dy = y - centerY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist < radius) {
-                        // Explosion burst pattern
-                        const angle = Math.atan2(dy, dx);
-                        const burstPattern = Math.sin(angle * 8) * 0.3 + 0.7;
-                        const distanceFactor = 1 - (dist / radius);
-                        const intensity = distanceFactor * burstPattern * (0.8 + flashIntensity * 0.4);
-                        
-                        // Create explosion pixel with white/bright color
-                        const whiteLevels = colorThemes.white.levels;
-                        const levelIndex = Math.floor(intensity * (whiteLevels.length - 1));
-                        const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
-                        
-                        const pixelValue = {
-                            isSpecialColor: true,
-                            color: color,
-                            intensity: intensity
-                        };
-                        
-                        // Add random sparks
-                        if (Math.random() < 0.1) {
-                            pixelValue.intensity = Math.min(1, intensity + Math.random() * 0.3);
-                            const sparkIndex = Math.floor(pixelValue.intensity * (whiteLevels.length - 1));
-                            pixelValue.color = whiteLevels[Math.min(sparkIndex, whiteLevels.length - 1)];
-                        }
-                        
-                        if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < pixelValue.intensity) {
-                            pixelGrid[y][x] = pixelValue;
-                        }
-                    }
-                }
-            }
-        }
-        
-        function drawEnergyWaves(centerX, centerY, radius, intensity, gridWidth, gridHeight) {
-            const waveCount = 3;
-            
-            for (let wave = 0; wave < waveCount; wave++) {
-                const waveRadius = radius - (wave * 8);
-                const waveThickness = 2;
-                const waveIntensity = intensity * (1 - wave * 0.3);
-                
-                if (waveRadius > 0) {
-                    for (let y = 0; y < gridHeight; y++) {
-                        for (let x = 0; x < gridWidth; x++) {
-                            const dx = x - centerX;
-                            const dy = y - centerY;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            
-                            if (Math.abs(dist - waveRadius) < waveThickness) {
-                                const currentWaveIntensity = waveIntensity * (1 - Math.abs(dist - waveRadius) / waveThickness);
-                                
-                                // Create wave pixel with white color
-                                const whiteLevels = colorThemes.white.levels;
-                                const levelIndex = Math.floor(currentWaveIntensity * (whiteLevels.length - 1));
-                                const color = whiteLevels[Math.min(levelIndex, whiteLevels.length - 1)];
-                                
-                                const pixelValue = {
-                                    isSpecialColor: true,
-                                    color: color,
-                                    intensity: currentWaveIntensity
-                                };
-                                
-                                if (!pixelGrid[y][x] || (pixelGrid[y][x].intensity || 0) < currentWaveIntensity) {
-                                    pixelGrid[y][x] = pixelValue;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // Initialize
         initDisplay();
         generatePattern();
